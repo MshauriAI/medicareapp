@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
+import { Ionicons } from '@expo/vector-icons';
 
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { Colors } from '@/constants/Colors';
@@ -12,6 +13,12 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarInactiveTintColor: Colors[colorScheme ?? 'light'].tabIconDefault,
+        tabBarStyle: {
+          backgroundColor: Colors[colorScheme ?? 'light'].background,
+          borderTopWidth: 0,
+          elevation: 0,
+        },
         headerShown: false,
       }}>
       <Tabs.Screen
@@ -19,7 +26,7 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
+            <Ionicons name={focused ? 'home' : 'home-outline'} size={24} color={color} />
           ),
         }}
       />
@@ -28,7 +35,7 @@ export default function TabLayout() {
         options={{
           title: 'Chat',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'chatbubbles' : 'chatbubbles-outline'} color={color} />
+            <Ionicons name={focused ? 'chatbubbles' : 'chatbubbles-outline'} size={24} color={color} />
           ),
         }}
       />
@@ -37,16 +44,16 @@ export default function TabLayout() {
         options={{
           title: 'Bookings',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'calendar' : 'calendar-outline'} color={color} />
+            <Ionicons name={focused ? 'calendar' : 'calendar-outline'} size={24} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="profile"        
+        name="profile"
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'person' : 'person-outline'} color={color} />
+            <Ionicons name={focused ? 'person' : 'person-outline'} size={24} color={color} />
           ),
         }}
       />
@@ -55,7 +62,7 @@ export default function TabLayout() {
         options={{
           title: 'Reports',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'stats-chart' : 'stats-chart-outline'} color={color} />
+            <Ionicons name={focused ? 'stats-chart' : 'stats-chart-outline'} size={24} color={color} />
           ),
         }}
       />

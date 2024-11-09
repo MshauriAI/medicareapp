@@ -17,8 +17,8 @@ export default function App() {
       style={styles.gradient}
     >
       <View style={styles.container}>
-        <Text style={styles.title}>Usaidizi AI</Text>
-        <Text style={styles.subtitle}>Empowering Assistance with AI</Text>
+        <Text style={styles.title}>MediCare</Text>
+        <Text style={styles.subtitle}>Empowering HealthCare with AI</Text>
 
         {/* Spacer between Title and the Microsoft Powered Text */}
         <View style={styles.smallSpacer} />
