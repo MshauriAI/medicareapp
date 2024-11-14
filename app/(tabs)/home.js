@@ -1,420 +1,437 @@
-// App.js
-import React from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  Image,
-} from "react-native";
-import tw from "tailwind-react-native-classnames";
-import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import MapView, { Marker } from "react-native-maps";
+import React, { useEffect, useState }  from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from "react-native";
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Linking } from 'react-native';
+import { useRouter } from 'expo-router';
 
-const App = () => {
-  return (
-    <ScrollView
-      style={tw`flex-1 bg-white pt-10 pb-20`}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Top Header */}
-      <View style={tw`px-4 flex-row justify-between items-center`}>
-        <View style={tw`flex-row items-center`}>
-          <Ionicons name="location" size={20} color="#4B7BE5" />
-          <View style={tw`ml-2`}>
-            <Text style={tw`text-xs text-gray-400`}>Hi, Alex Northam</Text>
-            <View style={tw`flex-row items-center`}>
-              <Text style={tw`font-bold`}>California, USA</Text>
-              <Ionicons name="chevron-down" size={20} color="black" />
+export default function Home({ navigation }) {
+    const router = useRouter();
+    const [user, setUser] = useState({ name: '' });
+    const [isModalVisible, setModalVisible] = useState(false);
+    const [imageUri, setImageUri] = useState(null);
+    const [upcomingAppointments, setUpcomingAppointments] = useState(0);
+    const [upcomingAppointment, setUpcomingAppointment] = useState(null);
+
+    const date = new Date();
+    const dayName = date.toLocaleDateString('en-US', { weekday: 'long'});
+    const day = date.getDate();
+    const month = date.toLocaleDateString('en-US', {month: 'long'});
+    const year = date.getFullYear();
+
+
+
+    useEffect(() => {
+        const getUserInfo = async () => {
+          try {
+            const userInfo = await AsyncStorage.getItem('userInfo');
+            if (userInfo !== null) {
+              const parsedUser = JSON.parse(userInfo);
+              setUser(parsedUser);
+              console.log(parsedUser);
+    
+              if (parsedUser.imageUri) {
+                setImageUri(parsedUser.imageUri);
+                console.log("Retrieved imageUri:", parsedUser.imageUri);
+              } else {
+                console.log("No property");
+              }
+    
+              if (parsedUser.token) {
+                getUpcomingAppointmentsCount(parsedUser.token);
+                getUpcomingAppointment(parsedUser.token);
+              } else {
+                console.log("No token available");
+              }
+            }
+          } catch (error) {
+            console.error("Error retrieving user info:", error);
+          } 
+        };
+    
+        getUserInfo();
+      }, []);
+
+      const getUpcomingAppointmentsCount = async (token) => {
+        try {
+          const response =  await fetch('https://stallion-holy-informally.ngrok-free.app/api/v1.0/appointments/count', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+          });
+    
+          if (response.ok) {
+            const data = await response.json();
+            const upcomingAppointmentsCount = data.totalAppointments;
+            setUpcomingAppointments(upcomingAppointmentsCount);
+            
+          } else {
+            console.log('failed to fetch upcoming appointments');
+          }
+        } catch (error) {
+          console.error("Error fetching upcoming appointments: ", error);
+        }
+      };
+
+      const getUpcomingAppointment = async (token) => {
+        try {
+          const response =  await fetch('https://stallion-holy-informally.ngrok-free.app/api/v1.0/appointments/upcoming', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+          });
+    
+          if (response.ok) {
+            const data = await response.json();
+            const upcoming = data.appointments;
+            console.log("test", upcoming);
+            setUpcomingAppointment(upcoming);
+            console.log('upcoming: ',upcomingAppointment)
+          } else {
+            console.log('failed to fetch upcoming appointments');
+          }
+        } catch (error) {
+          console.error("Error fetching upcoming appointments: ", error);
+        }
+      }
+
+    const handlePress = (meet_link) => {
+        if (upcomingAppointments !== 0) {
+            Linking.openURL(meet_link);
+        }
+    };
+
+
+    return (
+        <ScrollView style={styles.container}>
+            {/* Navbar */}
+            <View style={styles.navbar}>
+                <View style={styles.breadcrumb}>
+                    <TouchableOpacity>
+                        <Text style={styles.breadcrumbText}>Home</Text>
+                    </TouchableOpacity>
+                </View>
+                <View style={styles.navRight}>
+                    <TouchableOpacity style={styles.notificationButton}>
+                        <Ionicons name="notifications-outline" size={24} color="#1c0c4a" />
+                        <View style={styles.notificationBadge} />
+                    </TouchableOpacity>
+                    <TouchableOpacity>
+                        <Ionicons name="person-circle-outline" size={28} color="#1c0c4a" />
+                    </TouchableOpacity>
+                </View>
             </View>
-          </View>
-        </View>
-        <View
-          style={tw`w-10 h-10 rounded-full bg-green-50 items-center justify-center`}
-        >
-          <View style={tw`w-2 h-2 rounded-full bg-green-500`} />
-        </View>
-      </View>
 
-      {/* Search Bar */}
-      <View style={tw`mx-4 mt-4`}>
-        <View
-          style={tw`flex-row items-center bg-gray-50 rounded-full px-4 py-2`}
-        >
-          <Ionicons name="search" size={20} color="gray" />
-          <TextInput
-            placeholder="Search Doctor or Conditions"
-            style={tw`flex-1 ml-2`}
-            placeholderTextColor="gray"
-          />
-          <Ionicons name="mic" size={20} color="gray" />
-        </View>
-      </View>
+            {/* Main Content */}
+            <View style={styles.mainContent}>
+                <Text style={styles.title}>Medicare</Text>
+                <Text style={styles.dates}>
+                    {dayName} {month} {day} {year}
+                </Text>
 
-      {/* Date and Map Cards Row */}
-      <View style={tw`flex-row mx-4 mt-4`}>
-        {/* Date Card */}
-        <View style={tw`w-1/3 bg-indigo-900 rounded-xl p-1.5 mr-2`}>
-          <View style={tw`flex-row items-center justify-between mb-1`}>
-            <TouchableOpacity>
-              <Ionicons name="chevron-back" size={20} color="white" />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Ionicons name="chevron-forward" size={20} color="white" />
-            </TouchableOpacity>
-          </View>
-          <Text style={[tw`text-white text-xs`, { fontFamily: "outfit" }]}>
-            Sunday
-          </Text>
-          <Text style={[tw`text-white text-lg`, { fontFamily: "outfit-bold" }]}>
-            28
-          </Text>
-          <Text style={[tw`text-white text-xs`, { fontFamily: "outfit" }]}>
-            Feb
-          </Text>
-        </View>
+                {/* Appointment Card - Both states handled */}
+                <View 
+                    style={styles.upcomingCard}
+                    // onPress={() => navigation.navigate('Booking')}
+                >
+                    <View style={styles.upcomingHeader}>
+                        <Text style={styles.upcomingTitle}>Upcoming Appointments ({upcomingAppointments})</Text>
+                        <TouchableOpacity onPress={() => navigation.navigate('Appointments')}>
+                            <Text style={styles.viewAllText}>View All</Text>
+                        </TouchableOpacity>
+                    </View>
+                    
+                    {upcomingAppointment ? (
+                        <View style={styles.appointmentDetails}>
+                            <Image 
+                                source={{ uri: upcomingAppointment[0].doctor_image_url }} 
+                                style={styles.doctorImage}
+                            />
+                            <View style={styles.appointmentInfo}>
+                                <Text style={styles.doctorName}>Dr. {upcomingAppointment[0].doctor_first_name}</Text>
+                                <Text style={styles.specialtyText}>{upcomingAppointment[0].doctor_specialization}</Text>
+                                <View style={styles.appointmentTimeContainer}>
+                                    <Ionicons name="time-outline" size={16} color="#666" />
+                                    <Text style={styles.appointmentTime}>{upcomingAppointment[0].date}</Text>
+                                </View>
+                                <TouchableOpacity
+                                    onPress={() => handlePress(upcomingAppointment[0].meet_link)}
+                                >
+                                    <View style={styles.appointmentTypeContainer}>
+                                        <Ionicons name="videocam-outline" size={16} color="#1c0c4a" />
+                                        <Text style={styles.appointmentType}>{upcomingAppointment[0].appointment_method}</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    ) : (
+                        <View style={styles.emptyStateContainer}>
+                            <View style={styles.emptyIconContainer}>
+                                <Ionicons name="calendar-outline" size={32} color="#666" />
+                            </View>
+                            <Text style={styles.emptyStateText}>No upcoming appointments</Text>
+                            {/* <TouchableOpacity 
+                                style={styles.bookButton}
+                                onPress={() => navigation.navigate('Appointments')}
+                            >
+                                <Text style={styles.bookButtonText}>Book Now</Text>
+                            </TouchableOpacity> */}
+                        </View>
+                    )}
+                </View>
 
-        {/* Map Card */}
-        <View style={tw`flex-1 rounded-xl overflow-hidden ml-2`}>
-          <MapView
-            style={{ height: 90, width: "100%" }}
-            initialRegion={{
-              latitude: 37.78825,
-              longitude: -122.4324,
-              latitudeDelta: 0.0922,
-              longitudeDelta: 0.0421,
-            }}
-          >
-            <Marker
-              coordinate={{ latitude: 37.78825, longitude: -122.4324 }}
-              title="Marker Title"
-              description="Marker Description"
-            />
-          </MapView>
-        </View>
-      </View>
+                <Text style={styles.description}>
+                    We've redefined the healthcare experience to be faster, more accessible, and incredibly convenient.
+                </Text>
 
-      {/* Services Icons */}
-      <View style={tw`flex-row justify-between px-4 mt-6`}>
-        {["Medicine", "Lab Test", "Wellness", "Dentist", "Surgery"].map(
-          (service, index) => (
-            <TouchableOpacity key={service} style={tw`items-center`}>
-              <View
-                style={tw`w-12 h-12 rounded-lg bg-gray-50 items-center justify-center mb-1`}
-              >
-                <Ionicons
-                  name={
-                    index === 0
-                      ? "medical"
-                      : index === 1
-                      ? "flask"
-                      : index === 2
-                      ? "person"
-                      : index === 3
-                      ? "medical"
-                      : "medical"
-                  }
-                  size={24}
-                  color="#4B7BE5"
-                />
-              </View>
-              <Text style={tw`text-xs`}>{service}</Text>
-            </TouchableOpacity>
-          )
-        )}
-      </View>
-
-      {/* Featured Services */}
-      <View style={tw`mt-6 px-4`}>
-        <View style={tw`flex-row justify-between items-center mb-4`}>
-          <Text style={tw`font-semibold`}>Featured services</Text>
-          <Text style={tw`text-blue-500`}>View all</Text>
-        </View>
-
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <LinearGradient
-            colors={["#FFE5A3", "#FFD666"]}
-            style={tw`w-36 h-44 rounded-2xl mr-4 p-4 shadow-lg`}
-          >
-            <View style={tw`relative z-10`}>
-              <Text
-                style={[
-                  tw`text-lg font-bold text-gray-800`,
-                  { fontFamily: "outfit-bold" },
-                ]}
-              >
-                Win over
-              </Text>
-              <Text
-                style={[
-                  tw`text-lg font-bold text-gray-800 mb-2`,
-                  { fontFamily: "outfit-bold" },
-                ]}
-              >
-                Diabetes
-              </Text>
+                <TouchableOpacity 
+                    style={styles.button}
+                    onPress={() => navigation.navigate('Booking')}
+                >
+                    <Text style={styles.buttonText}>Book Consultation</Text>
+                </TouchableOpacity>
             </View>
-            <View
-              style={tw`absolute inset-0 bg-black opacity-20 rounded-2xl`}
-            />
-            <Image
-              source={{
-                uri: "https://images.pexels.com/photos/1001897/pexels-photo-1001897.jpeg",
-              }}
-              style={[
-                tw`w-24 h-24 absolute bottom-2 right-2 rounded-xl`,
-                { transform: [{ rotate: "-5deg" }] },
-              ]}
-            />
-          </LinearGradient>
 
-          <LinearGradient
-            colors={["#B2F5EA", "#81E6D9"]}
-            style={tw`w-36 h-44 rounded-2xl mr-4 p-4 shadow-lg`}
-          >
-            <Text
-              style={[
-                tw`text-lg font-bold text-gray-800`,
-                { fontFamily: "outfit-bold" },
-              ]}
-            >
-              Dental
-            </Text>
-            <Text
-              style={[
-                tw`text-lg font-bold text-gray-800 mb-2`,
-                { fontFamily: "outfit-bold" },
-              ]}
-            >
-              Treatments
-            </Text>
-            <Image
-              source={{
-                uri: "https://images.pexels.com/photos/6823410/pexels-photo-6823410.jpeg",
-              }}
-              style={[
-                tw`w-24 h-24 absolute bottom-2 right-2 rounded-xl`,
-                { transform: [{ rotate: "-5deg" }] },
-              ]}
-            />
-          </LinearGradient>
+            {/* Bottom Cards */}
+            <View style={styles.cardContainer}>
+                <TouchableOpacity 
+                    style={[styles.card, { backgroundColor: '#fde047' }]}
+                >
+                    <View style={styles.cardIconContainer}>
+                        <Ionicons name="videocam" size={24} color="#1c0c4a" />
+                    </View>
+                    <Text style={styles.cardTitle}>Instant Video Consultation</Text>
+                    <Text style={styles.cardText} >Connect with the doctor available</Text>
+                </TouchableOpacity>
 
-          <LinearGradient
-            colors={["#FED7D7", "#FEB2B2"]}
-            style={tw`w-36 h-44 rounded-2xl mr-4 p-4 shadow-lg`}
-          >
-            <Text
-              style={[
-                tw`text-lg font-bold text-gray-800`,
-                { fontFamily: "outfit-bold" },
-              ]}
-            >
-              Eye
-            </Text>
-            <Text
-              style={[
-                tw`text-lg font-bold text-gray-800 mb-2`,
-                { fontFamily: "outfit-bold" },
-              ]}
-            >
-              Care
-            </Text>
-            <Image
-              source={{
-                uri: "https://images.pexels.com/photos/6941098/pexels-photo-6941098.jpeg",
-              }}
-              style={[
-                tw`w-24 h-24 absolute bottom-2 right-2 rounded-xl`,
-                { transform: [{ rotate: "-5deg" }] },
-              ]}
-            />
-          </LinearGradient>
+                <TouchableOpacity 
+                    style={[styles.card, { backgroundColor: '#86efac' }]}
+                    onPress={() => navigation.navigate('Report')}
+                >
+                    <View style={styles.cardIconContainer}>
+                        <Ionicons name="location" size={24} color="#1c0c4a" />
+                    </View>
+                    <Text style={styles.cardTitle}>Find Hospitals near you</Text>
+                </TouchableOpacity>
+            </View>
         </ScrollView>
-      </View>
+    );
+}
 
-      {/* Book Appointment Card */}
-      <View
-        style={[
-          tw`mx-4 mt-6 bg-pink-50 p-4 rounded-xl`,
-          { fontFamily: "outfit" },
-        ]}
-      >
-        <View style={tw`flex-row justify-between items-center`}>
-          <View style={tw`flex-1`}>
-            <Text
-              style={[
-                tw`text-indigo-900 text-xl mb-1`,
-                { fontFamily: "outfit-bold" },
-              ]}
-            >
-              Book appointment an expert surgeon
-            </Text>
-            <Text style={[tw`text-gray-600`, { fontFamily: "outfit" }]}>
-              Treat common symptoms with specialist
-            </Text>
-          </View>
-          <TouchableOpacity>
-            <Ionicons name="chevron-forward" size={24} color="#1e1b4b" />
-          </TouchableOpacity>
-        </View>
-
-        <View style={tw`flex-row justify-between mt-4`}>
-          {["kidneys", "Eye", "Brain", "Lungs", "More"].map((item) => (
-            <View key={item} style={tw`items-center`}>
-              <View
-                style={tw`w-12 h-12 bg-white rounded-full items-center justify-center mb-2`}
-              >
-                <Ionicons
-                  name={
-                    item === "kidneys"
-                      ? "medical"
-                      : item === "Eye"
-                      ? "eye"
-                      : item === "Brain"
-                      ? "brain"
-                      : item === "Lungs"
-                      ? "medical"
-                      : "ellipsis-horizontal"
-                  }
-                  size={24}
-                  color="#4B7BE5"
-                />
-              </View>
-              <Text
-                style={[tw`text-xs text-indigo-900`, { fontFamily: "outfit" }]}
-              >
-                {item}
-              </Text>
-            </View>
-          ))}
-        </View>
-      </View>
-      {/* Frequently Booked Lab Tests */}
-      <View style={tw`mt-6`}>
-        <View style={tw`px-4 flex-row items-center mb-4`}>
-          <Ionicons name="flask-outline" size={24} color="#4B7BE5" />
-          <Text
-            style={[
-              tw`ml-2 text-lg text-indigo-900`,
-              { fontFamily: "outfit-medium" },
-            ]}
-          >
-            Frequently booked lab test
-          </Text>
-        </View>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={tw`px-4`}
-        >
-          {/* Full Body Checkup Card */}
-          <TouchableOpacity
-            style={tw`w-64 bg-yellow-50 rounded-xl mr-4 overflow-hidden`}
-          >
-            <View style={tw`p-4`}>
-              <View
-                style={tw`bg-rose-400 self-start px-2 py-1 rounded-lg mb-2`}
-              >
-                <Text
-                  style={[tw`text-white text-xs`, { fontFamily: "outfit" }]}
-                >
-                  60% off
-                </Text>
-              </View>
-              <Text
-                style={[
-                  tw`text-xl text-indigo-900 mb-1`,
-                  { fontFamily: "outfit-bold" },
-                ]}
-              >
-                Full body check up with Vitamin D
-              </Text>
-              <Text style={[tw`text-gray-600 mb-4`, { fontFamily: "outfit" }]}>
-                Measures Vitamin D & B12 levels and others essentials.
-              </Text>
-              <View style={tw`flex-row items-center`}>
-                <Text
-                  style={[
-                    tw`text-gray-400 line-through`,
-                    { fontFamily: "outfit" },
-                  ]}
-                >
-                  $2469
-                </Text>
-                <Text
-                  style={[
-                    tw`ml-2 text-xl text-indigo-900`,
-                    { fontFamily: "outfit-bold" },
-                  ]}
-                >
-                  $1049
-                </Text>
-              </View>
-            </View>
-            <Image
-              source={require("../../assets/images/checkup.png")} // Add your image here
-              style={tw`w-full h-32`}
-              resizeMode="cover"
-            />
-          </TouchableOpacity>
-
-          {/* Preventive Package Card */}
-          <TouchableOpacity
-            style={tw`w-64 bg-green-50 rounded-xl mr-4 overflow-hidden`}
-          >
-            <View style={tw`p-4`}>
-              <View
-                style={tw`bg-rose-400 self-start px-2 py-1 rounded-lg mb-2`}
-              >
-                <Text
-                  style={[tw`text-white text-xs`, { fontFamily: "outfit" }]}
-                >
-                  40% off
-                </Text>
-              </View>
-              <Text
-                style={[
-                  tw`text-xl text-indigo-900 mb-1`,
-                  { fontFamily: "outfit-bold" },
-                ]}
-              >
-                Preventive and Diabetes
-              </Text>
-              <Text style={[tw`text-gray-600 mb-4`, { fontFamily: "outfit" }]}>
-                Specially designed tests to cover preventive care.
-              </Text>
-              <View style={tw`flex-row items-center`}>
-                <Text
-                  style={[
-                    tw`text-gray-400 line-through`,
-                    { fontFamily: "outfit" },
-                  ]}
-                >
-                  $1274
-                </Text>
-                <Text
-                  style={[
-                    tw`ml-2 text-xl text-indigo-900`,
-                    { fontFamily: "outfit-bold" },
-                  ]}
-                >
-                  $1475
-                </Text>
-              </View>
-            </View>
-            <Image
-              source={require("../../assets/images/checkup.png")} // Add your image here
-              style={tw`w-full h-32`}
-              resizeMode="cover"
-            />
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
-    </ScrollView>
-  );
-};
-
-export default App;
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#f5f5f5',
+    },
+    navbar: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingTop: 40,
+        paddingBottom: 10,
+        backgroundColor: '#fff',
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+    },
+    breadcrumb: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    breadcrumbText: {
+        fontSize: 16,
+        color: '#666',
+    },
+    navRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 15,
+    },
+    notificationButton: {
+        position: 'relative',
+    },
+    notificationBadge: {
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: '#ef4444',
+    },
+    mainContent: {
+        padding: 20,
+    },
+    title: {
+        fontSize: 32,
+        fontWeight: 'bold',
+        color: '#1c0c4a',
+        marginBottom: 8,
+    },
+    dates: {
+        fontSize: 16,
+        color: '#666',
+        marginBottom: 20,
+    },
+    upcomingCard: {
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 20,
+        paddingBottom: 10,
+        marginBottom: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    upcomingHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 15,
+    },
+    upcomingTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#1c0c4a',
+    },
+    viewAllText: {
+        fontSize: 14,
+        color: '#1c0c4a',
+        fontWeight: '500',
+        textDecorationLine: 'underline',
+    },
+    // Empty state styles
+    emptyStateContainer: {
+        alignItems: 'center',
+        paddingVertical: 20,
+    },
+    emptyIconContainer: {
+        width: 64,
+        height: 64,
+        backgroundColor: '#f5f5f5',
+        borderRadius: 32,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 12,
+    },
+    emptyStateText: {
+        fontSize: 16,
+        color: '#666',
+        marginBottom: 16,
+    },
+    bookButton: {
+        backgroundColor: '#1c0c4a',
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        borderRadius: 24,
+    },
+    bookButtonText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    // Appointment details styles
+    appointmentDetails: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    doctorImage: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        marginRight: 15,
+    },
+    appointmentInfo: {
+        flex: 1,
+    },
+    doctorName: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#1c0c4a',
+        marginBottom: 4,
+    },
+    specialtyText: {
+        fontSize: 14,
+        color: '#666',
+        marginBottom: 8,
+    },
+    appointmentTimeContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 4,
+    },
+    appointmentTime: {
+        fontSize: 14,
+        color: '#666',
+        marginLeft: 6,
+    },
+    appointmentTypeContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#E3F2FD',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
+        alignSelf: 'flex-start',
+    },
+    appointmentType: {
+        fontSize: 12,
+        color: '#1c0c4a',
+        marginLeft: 4,
+        fontWeight: '500',
+    },
+    description: {
+        fontSize: 16,
+        color: '#666',
+        lineHeight: 24,
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    button: {
+        backgroundColor: '#1c0c4a',
+        borderRadius: 12,
+        paddingVertical: 16,
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    buttonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    cardContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        marginBottom: 20,
+    },
+    card: {
+        width: '48%',
+        borderRadius: 16,
+        padding: 15,
+        alignItems: 'center',
+    },
+    cardIconContainer: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 10,
+        marginBottom: 10,
+    },
+    cardTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#1c0c4a',
+        marginBottom: 8,
+        textAlign: 'center',
+    },
+    cardText: {
+        fontSize: 12,
+        color: '#666',
+        textAlign: 'center',
+    },
+});
