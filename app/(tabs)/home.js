@@ -1,11 +1,13 @@
-import React, { useEffect, useState }  from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, TouchableOpacity, Image, ScrollView } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import tw from "tailwind-react-native-classnames";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 
-export default function Home({ navigation }) {
+export default function Home() {
     const router = useRouter();
     const [user, setUser] = useState({ name: '' });
     const [isModalVisible, setModalVisible] = useState(false);
@@ -18,7 +20,6 @@ export default function Home({ navigation }) {
     const day = date.getDate();
     const month = date.toLocaleDateString('en-US', {month: 'long'});
     const year = date.getFullYear();
-
 
     useEffect(() => {
         const getUserInfo = async () => {
@@ -105,328 +106,155 @@ export default function Home({ navigation }) {
         }
     };
 
+  return (
+    <ScrollView style={tw`flex-1 bg-gray-50`}>
+      {/* Header */}
+      <LinearGradient
+        colors={['#ffffff', '#f3f4f6']}
+        style={tw`px-5 pt-12 pb-6`}
+      >
+        <View style={tw`flex-row justify-between items-center`}>
+          <View>
+            <Text style={[tw`text-lg text-gray-600`, { fontFamily: 'outfit' }]}>Welcome back,</Text>
+            <Text style={[tw`text-2xl text-gray-900`, { fontFamily: 'outfit-bold' }]}>{user.firstName}</Text>
+          </View>
+          <View style={tw`flex-row items-center space-x-4`}>
+            <TouchableOpacity style={tw`relative`}>
+              <Ionicons name="notifications-outline" size={24} color="#1c1917" />
+              <View style={tw`absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white`} />
+            </TouchableOpacity>
+            
+          </View>
+        </View>
+      </LinearGradient>
 
-    return (
-        <ScrollView style={styles.container}>
-            {/* Navbar */}
-            <View style={styles.navbar}>
-                <View style={styles.breadcrumb}>
-                    <TouchableOpacity>
-                        <Text style={styles.breadcrumbText}>Home</Text>
-                    </TouchableOpacity>
-                </View>
-                <View style={styles.navRight}>
-                    <TouchableOpacity style={styles.notificationButton}>
-                        <Ionicons name="notifications-outline" size={24} color="#1c0c4a" />
-                        <View style={styles.notificationBadge} />
-                    </TouchableOpacity>
-                    <TouchableOpacity>
-                        <Ionicons name="person-circle-outline" size={28} color="#1c0c4a" />
-                    </TouchableOpacity>
-                </View>
-            </View>
+      <View style={tw`px-5 py-6`}>
+        {/* Date Display */}
+        <View style={tw`mb-6`}>
+          <Text style={[tw`text-base text-gray-500`, { fontFamily: 'outfit' }]}>
+            {dayName}, {month} {day}
+          </Text>
+        </View>
 
-            {/* Main Content */}
-            <View style={styles.mainContent}>
-                <Text style={styles.title}>Medicare</Text>
-                <Text style={styles.dates}>
-                    {dayName} {month} {day} {year}
+        {/* Upcoming Appointment Card */}
+        <View style={tw`bg-white rounded-3xl p-6 shadow-lg mb-6`}>
+          <View style={tw`flex-row justify-between items-center mb-4`}>
+            <Text style={[tw`text-xl text-gray-900`, { fontFamily: 'outfit-bold' }]}>
+              Upcoming Appointment
+            </Text>
+            <TouchableOpacity>
+              <Text style={[tw`text-blue-600`, { fontFamily: 'outfit-medium' }]}
+                onPress={() => router.push('/(tabs)/booking')}
+              >View all</Text>
+            </TouchableOpacity>
+          </View>
+
+          {upcomingAppointment ? (
+            <View style={tw`flex-row items-center`}>
+              <Image 
+                source={{ uri: upcomingAppointment[0].doctor_image_url }}
+                style={tw`w-16 h-16 rounded-2xl mr-4`}
+              />
+              <View style={tw`flex-1`}>
+                <Text style={[tw`text-lg text-gray-900 mb-1`, { fontFamily: 'outfit-bold' }]}>
+                  Dr. {upcomingAppointment[0].doctor_first_name}
                 </Text>
-
-                {/* Appointment Card - Both states handled */}
-                <View 
-                    style={styles.upcomingCard}
-                    // onPress={() => navigation.navigate('Booking')}
-                >
-                    <View style={styles.upcomingHeader}>
-                        <Text style={styles.upcomingTitle}>Upcoming Appointments ({upcomingAppointments})</Text>
-                        <TouchableOpacity onPress={() => router.push('../../(tabs)/appointment')}>
-                            <Text style={styles.viewAllText}>View All</Text>
-                        </TouchableOpacity>
-                    </View>
-                    
-                    {upcomingAppointment && upcomingAppointment.length > 0? (
-                        <View style={styles.appointmentDetails}>
-                            <Image 
-                                source={{ uri: upcomingAppointment[0].doctor_image_url }} 
-                                style={styles.doctorImage}
-                            />
-                            <View style={styles.appointmentInfo}>
-                                <Text style={styles.doctorName}>Dr. {upcomingAppointment[0].doctor_first_name}</Text>
-                                <Text style={styles.specialtyText}>{upcomingAppointment[0].doctor_specialization}</Text>
-                                <View style={styles.appointmentTimeContainer}>
-                                    <Ionicons name="time-outline" size={16} color="#666" />
-                                    <Text style={styles.appointmentTime}>{upcomingAppointment[0].date}</Text>
-                                </View>
-                                <TouchableOpacity
-                                    onPress={() => handlePress(upcomingAppointment[0].meet_link)}
-                                >
-                                    <View style={styles.appointmentTypeContainer}>
-                                        <Ionicons name="videocam-outline" size={16} color="#1c0c4a" />
-                                        <Text style={styles.appointmentType}>{upcomingAppointment[0].appointment_method}</Text>
-                                    </View>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    ) : (
-                        <View style={styles.emptyStateContainer}>
-                            <View style={styles.emptyIconContainer}>
-                                <Ionicons name="calendar-outline" size={32} color="#666" />
-                            </View>
-                        </View>
-                    )}
-                </View>
-
-                <Text style={styles.description}>
-                    We've redefined the healthcare experience to be faster, more accessible, and incredibly convenient.
+                <Text style={[tw`text-gray-500 mb-2`, { fontFamily: 'outfit' }]}>
+                  {upcomingAppointment[0].doctor_specialization}
                 </Text>
-
-                <TouchableOpacity 
-                    style={styles.button}
-                    onPress={() => router.push('../../(tabs)/booking/')}
-                >
-                    <Text style={styles.buttonText}>Book Consultation</Text>
-                </TouchableOpacity>
+                <View style={tw`flex-row items-center`}>
+                  <View style={tw`flex-row items-center mr-4`}>
+                    <Ionicons name="time-outline" size={16} color="#6b7280" />
+                    <Text style={[tw`ml-1 text-gray-600`, { fontFamily: 'outfit' }]}>
+                      {upcomingAppointment[0].date}
+                    </Text>
+                  </View>
+                  <TouchableOpacity 
+                    onPress={() => handlePress(upcomingAppointment[0].meet_link)}
+                    style={tw`bg-blue-50 px-3 py-1 rounded-full flex-row items-center`}
+                  >
+                    <Ionicons name="videocam" size={16} color="#2563eb" />
+                    <Text style={[tw`ml-1 text-blue-600`, { fontFamily: 'outfit-medium' }]}>
+                      Video Call
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
-
-            {/* Bottom Cards */}
-            <View style={styles.cardContainer}>
-                <TouchableOpacity 
-                    style={[styles.card, { backgroundColor: '#fde047' }]}
+          ) : (
+            <View style={tw`items-center py-6`}>
+              <View style={tw`bg-gray-100 w-16 h-16 rounded-full items-center justify-center mb-3`}>
+                <Ionicons name="calendar-outline" size={32} color="#6b7280" />
+              </View>
+              <Text style={[tw`text-gray-600 mb-4`, { fontFamily: 'outfit' }]}>
+                No upcoming appointments
+              </Text>
+              <TouchableOpacity 
+                style={tw`bg-blue-600 px-6 py-3 rounded-xl`}
+              >
+                <Text style={[tw`text-white`, { fontFamily: 'outfit-medium' }]}
+                    onPress={() => router.push('/(tabs)/booking')}
                 >
-                    <View style={styles.cardIconContainer}>
-                        <Ionicons name="videocam" size={24} color="#1c0c4a" />
-                    </View>
-                    <Text style={styles.cardTitle}>Instant Video Consultation</Text>
-                    <Text style={styles.cardText} >Connect with the doctor available</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                    style={[styles.card, { backgroundColor: '#86efac' }]}
-                    onPress={() => navigation.navigate('Report')}
-                >
-                    <View style={styles.cardIconContainer}>
-                        <Ionicons name="location" size={24} color="#1c0c4a" />
-                    </View>
-                    <Text style={styles.cardTitle}>Find Hospitals near you</Text>
-                </TouchableOpacity>
+                  Book Appointment
+                </Text>
+              </TouchableOpacity>
             </View>
-        </ScrollView>
-    );
+          )}
+        </View>
+
+        {/* Quick Actions */}
+        <Text style={[tw`text-xl text-gray-900 mb-4`, { fontFamily: 'outfit-bold' }]}>
+          Quick Actions
+        </Text>
+        
+        <View style={tw`flex-row flex-wrap -mx-2`}>
+          {[
+            { 
+              title: 'Video Consultation', 
+              icon: 'videocam', 
+              color: 'bg-yellow-100', 
+              iconColor: '#1c1917',
+              route: '/videocall'
+            },
+            { 
+              title: 'Find Hospital', 
+              icon: 'location', 
+              color: 'bg-green-100', 
+              iconColor: '#1c1917',
+              route: '/maps'
+            },
+            // { 
+            //   title: 'Lab Tests', 
+            //   icon: 'flask', 
+            //   color: 'bg-purple-100', 
+            //   iconColor: '#1c1917',
+            //   route: '/lab-tests'
+            // },
+            // { 
+            //   title: 'Medicines', 
+            //   icon: 'medical', 
+            //   color: 'bg-blue-100', 
+            //   iconColor: '#1c1917',
+            //   route: '/medicines'
+            // },
+          ].map((item, index) => (
+            <TouchableOpacity 
+              key={index}
+              style={tw`w-1/2 px-2 mb-4`}
+              onPress={() => router.push(item.route)}
+            >
+              <View style={[tw`${item.color} p-4 rounded-2xl`, { minHeight: 120 }]}>
+                <View style={tw`bg-white w-10 h-10 rounded-xl items-center justify-center mb-3`}>
+                  <Ionicons name={item.icon} size={24} color={item.iconColor} />
+                </View>
+                <Text style={[tw`text-gray-900`, { fontFamily: 'outfit-medium' }]}>
+                  {item.title}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+    </ScrollView>
+  );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f5f5f5',
-    },
-    navbar: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingTop: 40,
-        paddingBottom: 10,
-        backgroundColor: '#fff',
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-    },
-    breadcrumb: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    breadcrumbText: {
-        fontSize: 16,
-        color: '#666',
-    },
-    navRight: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 15,
-    },
-    notificationButton: {
-        position: 'relative',
-    },
-    notificationBadge: {
-        position: 'absolute',
-        top: 0,
-        right: 0,
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: '#ef4444',
-    },
-    mainContent: {
-        padding: 20,
-    },
-    title: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: '#1c0c4a',
-        marginBottom: 8,
-    },
-    dates: {
-        fontSize: 16,
-        color: '#666',
-        marginBottom: 20,
-    },
-    upcomingCard: {
-        backgroundColor: '#fff',
-        borderRadius: 16,
-        padding: 20,
-        paddingBottom: 10,
-        marginBottom: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-    },
-    upcomingHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 15,
-    },
-    upcomingTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#1c0c4a',
-    },
-    viewAllText: {
-        fontSize: 14,
-        color: '#1c0c4a',
-        fontWeight: '500',
-        textDecorationLine: 'underline',
-    },
-    // Empty state styles
-    emptyStateContainer: {
-        alignItems: 'center',
-        paddingVertical: 20,
-    },
-    emptyIconContainer: {
-        width: 64,
-        height: 64,
-        backgroundColor: '#f5f5f5',
-        borderRadius: 32,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 12,
-    },
-    emptyStateText: {
-        fontSize: 16,
-        color: '#666',
-        marginBottom: 16,
-    },
-    bookButton: {
-        backgroundColor: '#1c0c4a',
-        paddingHorizontal: 24,
-        paddingVertical: 12,
-        borderRadius: 24,
-    },
-    bookButtonText: {
-        color: '#fff',
-        fontSize: 14,
-        fontWeight: '600',
-    },
-    // Appointment details styles
-    appointmentDetails: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    doctorImage: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        marginRight: 15,
-    },
-    appointmentInfo: {
-        flex: 1,
-    },
-    doctorName: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#1c0c4a',
-        marginBottom: 4,
-    },
-    specialtyText: {
-        fontSize: 14,
-        color: '#666',
-        marginBottom: 8,
-    },
-    appointmentTimeContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 4,
-    },
-    appointmentTime: {
-        fontSize: 14,
-        color: '#666',
-        marginLeft: 6,
-    },
-    appointmentTypeContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#E3F2FD',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 6,
-        alignSelf: 'flex-start',
-    },
-    appointmentType: {
-        fontSize: 12,
-        color: '#1c0c4a',
-        marginLeft: 4,
-        fontWeight: '500',
-    },
-    description: {
-        fontSize: 16,
-        color: '#666',
-        lineHeight: 24,
-        marginBottom: 20,
-        textAlign: 'center',
-    },
-    button: {
-        backgroundColor: '#1c0c4a',
-        borderRadius: 12,
-        paddingVertical: 16,
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    buttonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: '600',
-    },
-    cardContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        marginBottom: 20,
-    },
-    card: {
-        width: '48%',
-        borderRadius: 16,
-        padding: 15,
-        alignItems: 'center',
-    },
-    cardIconContainer: {
-        backgroundColor: '#fff',
-        borderRadius: 12,
-        padding: 10,
-        marginBottom: 10,
-    },
-    cardTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#1c0c4a',
-        marginBottom: 8,
-        textAlign: 'center',
-    },
-    cardText: {
-        fontSize: 12,
-        color: '#666',
-        textAlign: 'center',
-    },
-});

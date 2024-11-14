@@ -1,369 +1,186 @@
-import {
-    AntDesign,
-    FontAwesome,
-    Ionicons,
-    MaterialCommunityIcons,
-  } from "@expo/vector-icons";
-import { View, Text, ScrollView, Image, TouchableOpacity, StatusBar } from "react-native";
-import { useFonts } from "expo-font";
-import { useState, useEffect } from "react";
-import { StyleSheet } from 'react-native';
-import tw from 'tailwind-react-native-classnames';
-import * as ImagePicker from "expo-image-picker";
-// import * as FileSystem from "expo-file-system";
-// import AsyncStorage from "@react-native-async-storage/async-storage";
-// import { router } from "expo-router";
+import React, { useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Image, Switch } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import tw from 'tailwind-react-native-classnames';
+import * as Progress from 'react-native-progress';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ProfileScreen() {
-  const [image, setImage] = useState(null);
-  const [user, setUser] = useState(null);
-  const [imageUri, setImageUri] = useState(null);
-  // const [loader, setLoader] = useState(false);
-
-  const [fontsLoaded] = useFonts({
-    outfit: require("../../assets/fonts/Outfit-Regular.ttf"),
-    "outfit-bold": require("../../assets/fonts/Outfit-Bold.ttf"),
-    "outfit-medium": require("../../assets/fonts/Outfit-Medium.ttf"),
-  });
   const router = useRouter();
-  
-  const navigateTo = (path) => {
-    router.push(path);
+  const [notifications, setNotifications] = useState(true);
+  const [biometrics, setBiometrics] = useState(true);
+
+  const userProfile = {
+    name: "John Doe",
+    specialization: "General Practitioner",
+    email: "john.doe@medcare.com",
+    memberSince: "2023",
+    avatar: require("../../assets/images/jeph.jpg"),
+    consultations: 156,
+    rating: 4.9,
+    reviews: 234,
+    upcomingAppointments: 3,
+    recentConsultations: [
+      { id: 1, patient: "Sarah Wilson", date: "2024-03-15", type: "Video Call" },
+      { id: 2, patient: "Mike Brown", date: "2024-03-12", type: "In-Person" },
+      { id: 3, patient: "Emma Davis", date: "2024-03-10", type: "Video Call" },
+    ]
   };
 
-  const url = 'https://stallion-holy-informally.ngrok-free.app';
-
-  const uploadImage = async (imageUri) => {
-    const formData = new FormData();
-
-    formData.append('file', {
-      uri : imageUri,
-      name: 'image.jpg',
-      type: 'image/jpeg'
-    });
-
-    try {
-      const response =  await fetch(url + '/api/v1/upload', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Authorization': `Bearer ${user.token}`
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const returnedUri = data.imageUri;
-        console.log('Image uploaded successfully');
-        console.log(returnedUri);
-        
-        setImageUri(returnedUri);
-        await AsyncStorage.setItem('userInfo', JSON.stringify({ ...user, imageUri: returnedUri}));
-      } else {
-        console.log('Image upload failed');
-      }
-    } catch (error) {
-      console.error("Error uploading image: ", error);
+  const menuItems = [
+    {
+      title: "Medical Profile",
+      items: [
+        { icon: "medical", label: "Medical History", route: "medical-history" },
+        { icon: "document-text", label: "Prescriptions", route: "prescriptions" },
+        { icon: "fitness", label: "Health Metrics", route: "health-metrics" },
+        { icon: "calendar", label: "Appointments", route: "appointments" },
+      ]
+    },
+    
+    {
+      title: "Settings & Support",
+      items: [
+        { icon: "settings", label: "Account Settings", route: "settings" },
+        { icon: "shield-checkmark", label: "Privacy", route: "privacy" },
+        { icon: "headset", label: "Support", route: "support" },
+        { icon: "information-circle", label: "About", route: "about" },
+      ]
     }
-  }
-
-  const selectImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    console.log("Here");
-
-    if (permissionResult.granted === false) {
-        alert('Permission to access media library is required!');
-        return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        quality: 1,
-    });
-
-    if (!result.canceled) {
-        const uri = result.assets[0].uri;
-        setImageUri(uri);
-        uploadImage(uri);
-        
-    } else {
-        console.log('User cancelled image picker');
-    }
-
-  };
-
-  useEffect(() => {
-    const getUserInfo = async () => {
-      try {
-        const userInfo = await AsyncStorage.getItem('userInfo');
-        if (userInfo !== null) {
-          const parsedUser = JSON.parse(userInfo);
-          setUser(parsedUser);
-          console.log(user);
-
-          if (parsedUser.imageUri) {
-            setImageUri(parsedUser.imageUri);
-          } else {
-            console.log("No property");
-          }
-        }
-      } catch (error) {
-        console.error("Error retrieving user info:", error);
-      }
-    };
-
-    getUserInfo();
-  }, []);
-
-  if (!fontsLoaded) {
-    return null;
-  }
+  ];
 
   return (
-    <ScrollView>
-      {/* <StatusBar barStyle="dark-content" backgroundColor="#6B21A8" /> */}
-      <View style={styles.navbar}>
-          <View style={styles.breadcrumb}>
-              <TouchableOpacity onPress={() => navigation.navigate('Home')}>
-                  <Text style={styles.breadcrumbText}>Home</Text>
-              </TouchableOpacity>
-              <Ionicons name="chevron-forward" size={15} style={styles.breadcrumbText} />
-              <Text style={styles.breadcrumbText}>Profile</Text>
-          </View>
-          <View style={styles.navRight}>
-              <TouchableOpacity style={styles.notificationButton}>
-                  <Ionicons name="notifications-outline" size={24} color="#1c0c4a" />
-              </TouchableOpacity>
-              <TouchableOpacity>
-                  <Ionicons name="person-circle-outline" size={28} color="#1c0c4a" />
-              </TouchableOpacity>
-          </View>
-      </View>
-      {/* <View style={tw`flex-row items-center py-8 justify-center bg-purple-800 mt-8 mb-4`}>
-        <TouchableOpacity  onPress={() => router.back()}>
-          <Ionicons name="arrow-back-circle-outline" size={24} color="white" />
-        </TouchableOpacity>
-        <Text style={[tw`text-white text-2xl ml-4`, { fontFamily: 'outfit-bold' }]}>Profile</Text>
-      </View> */}
-      
-      <View style={{ flexDirection: "row", justifyContent: "center" }}>
-        <View style={{ position: "relative" }}>
+    <ScrollView style={tw`flex-1 bg-white`}>
+      {/* Profile Header */}
+      <LinearGradient
+        colors={['#3B82F6', '#2563EB']}
+        style={tw`p-6 rounded-b-3xl`}
+      >
+        <View style={tw`flex-row items-center mt-6`}>
           <Image
-            source={require('../../assets/images/profileImage.jpg')}
-            style={{ width: 90, height: 90, borderRadius: 100 }}
+            source={userProfile.avatar}
+            style={tw`w-24 h-24 rounded-full border-4 border-white`}
           />
+          <View style={tw`ml-4 flex-1`}>
+            <Text style={tw`text-white text-2xl font-bold`}>{userProfile.name}</Text>
+            <Text style={tw`text-blue-100`}>{userProfile.specialization}</Text>
+            <View style={tw`flex-row items-center mt-2`}>
+              <Ionicons name="star" size={20} color="#FCD34D" />
+              <Text style={tw`text-white ml-2`}>{userProfile.rating} Rating</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Quick Stats */}
+        <View style={tw`flex-row justify-between mt-6 bg-white/10 rounded-2xl p-4`}>
+          <View style={tw`items-center`}>
+            <Text style={tw`text-white text-xl font-bold`}>{userProfile.consultations}</Text>
+            <Text style={tw`text-blue-100 text-sm`}>Consultations</Text>
+          </View>
+          <View style={tw`items-center`}>
+            <Text style={tw`text-white text-xl font-bold`}>{userProfile.memberSince}</Text>
+            <Text style={tw`text-blue-100 text-sm`}>Member since</Text>
+          </View>
+          
+          <View style={tw`items-center`}>
+            <Text style={tw`text-white text-xl font-bold`}>{userProfile.upcomingAppointments}</Text>
+            <Text style={tw`text-blue-100 text-sm`}>Upcoming</Text>
+          </View>
+        </View>
+      </LinearGradient>
+
+      {/* Recent Consultations */}
+      <View style={tw`px-6 py-4`}>
+        <Text style={tw`text-gray-900 text-lg font-bold mb-4`}>Recent Consultations</Text>
+        {userProfile.recentConsultations.map((consultation) => (
           <TouchableOpacity
-            style={{
-              position: "absolute",
-              bottom: 5,
-              right: 0,
-              width: 30,
-              height: 30,
-              backgroundColor: "#f5f5f5",
-              borderRadius: 100,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
+            key={consultation.id}
+            style={tw`bg-gray-50 rounded-xl p-4 mb-3 flex-row items-center`}
           >
-            <Ionicons name="camera-outline" size={25} />
+            <View style={tw`w-10 h-10 bg-blue-100 rounded-full items-center justify-center`}>
+              <Ionicons 
+                name={consultation.type === "Video Call" ? "videocam" : "medical"} 
+                size={20} 
+                color="#2563EB" 
+              />
+            </View>
+            <View style={tw`flex-1 ml-4`}>
+              <Text style={tw`text-gray-900 font-bold`}>{consultation.patient}</Text>
+              <Text style={tw`text-gray-500 text-sm`}>{consultation.date}</Text>
+            </View>
+            <Text style={tw`text-blue-600 text-sm`}>{consultation.type}</Text>
           </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Menu Sections */}
+      {menuItems.map((section, index) => (
+        <View key={index} style={tw`px-6 py-4`}>
+          <Text style={tw`text-gray-900 text-lg font-bold mb-4`}>{section.title}</Text>
+          <View style={tw`bg-gray-50 rounded-xl overflow-hidden`}>
+            {section.items.map((item, itemIndex) => (
+              <TouchableOpacity
+                key={itemIndex}
+                style={tw`flex-row items-center p-4 ${
+                  itemIndex !== section.items.length - 1 ? 'border-b border-gray-100' : ''
+                }`}
+                onPress={() => router.push(item.route)}
+              >
+                <View style={tw`w-8 h-8 bg-blue-100 rounded-full items-center justify-center`}>
+                  <Ionicons name={item.icon} size={18} color="#2563EB" />
+                </View>
+                <Text style={tw`text-gray-900 ml-4 flex-1`}>{item.label}</Text>
+                <Ionicons name="chevron-forward" size={20} color="#6B7280" />
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      ))}
+
+      {/* Settings */}
+      <View style={tw`px-6 py-4 mb-4`}>
+        <Text style={tw`text-gray-900 text-lg font-bold mb-4`}>Quick Settings</Text>
+        <View style={tw`bg-gray-50 rounded-xl overflow-hidden`}>
+          <View style={tw`flex-row items-center justify-between p-4 border-b border-gray-100`}>
+            <View style={tw`flex-row items-center`}>
+              <View style={tw`w-8 h-8 bg-blue-100 rounded-full items-center justify-center`}>
+                <Ionicons name="notifications" size={18} color="#2563EB" />
+              </View>
+              <Text style={tw`text-gray-900 ml-4`}>Notifications</Text>
+            </View>
+            <Switch
+              value={notifications}
+              onValueChange={setNotifications}
+              trackColor={{ false: '#D1D5DB', true: '#93C5FD' }}
+              thumbColor={notifications ? '#2563EB' : '#9CA3AF'}
+            />
+          </View>
+          <View style={tw`flex-row items-center justify-between p-4`}>
+            <View style={tw`flex-row items-center`}>
+              <View style={tw`w-8 h-8 bg-blue-100 rounded-full items-center justify-center`}>
+                <Ionicons name="finger-print" size={18} color="#2563EB" />
+              </View>
+              <Text style={tw`text-gray-900 ml-4`}>Biometric Login</Text>
+            </View>
+            <Switch
+              value={biometrics}
+              onValueChange={setBiometrics}
+              trackColor={{ false: '#D1D5DB', true: '#93C5FD' }}
+              thumbColor={biometrics ? '#2563EB' : '#9CA3AF'}
+            />
+          </View>
         </View>
       </View>
-      <Text
-        style={{
-          textAlign: "center",
-          fontSize: 25,
-          paddingTop: 10,
-          fontWeight: "600",
-          fontFamily: "outfit-bold",
-        }}
-      ></Text>
-      <View style={{ marginHorizontal: 16, marginTop: 30 }}>
-        <Text
-          style={{
-            fontSize: 20,
-            marginBottom: 16,
-            fontFamily: "outfit-bold",
-          }}
-        >
-          Account Details
-        </Text>
-        <TouchableOpacity
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 20,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              columnGap: 30,
-            }}
-          >
-            <View
-              style={{
-                borderWidth: 2,
-                borderColor: "#dde2ec",
-                padding: 15,
-                borderRadius: 100,
-                width: 55,
-                height: 55,
-              }}
-            >
-              <FontAwesome
-                style={{ alignSelf: "center" }}
-                name="user-o"
-                size={20}
-                color={"black"}
-              />
-            </View>
-            <View>
-              <Text style={{ fontSize: 16, fontFamily: "outfit-bold" }}>
-                Detail Profile
-              </Text>
-              <Text
-                style={{
-                  color: "#575757",
-                  fontFamily: "outfit",
-                }}
-              >
-                Information Account
-              </Text>
-            </View>
-          </View>
-          <TouchableOpacity>
-            <AntDesign name="right" size={26} color={"#CBD5E0"} />
-          </TouchableOpacity>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 20,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              columnGap: 30,
-            }}
-          >
-            <View
-              style={{
-                borderWidth: 2,
-                borderColor: "#dde2ec",
-                padding: 15,
-                borderRadius: 100,
-                width: 55,
-                height: 55,
-              }}
-            >
-              <MaterialCommunityIcons
-                style={{ alignSelf: "center" }}
-                name="book-account-outline"
-                size={20}
-                color={"black"}
-              />
-            </View>
-            <View>
-              <Text style={{ fontSize: 16, fontFamily: "outfit-bold" }}>
-                Incidents Reported
-              </Text>
-              <Text
-                style={{
-                  color: "#575757",
-                  fontFamily: "outfit",
-                }}
-              >
-                The all Incidents Reported
-              </Text>
-            </View>
-          </View>
-          <TouchableOpacity>
-            <AntDesign name="right" size={26} color={"#CBD5E0"} />
-          </TouchableOpacity>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 20,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              columnGap: 30,
-            }}
-          >
-            <View
-              style={{
-                borderWidth: 2,
-                borderColor: "#dde2ec",
-                padding: 15,
-                borderRadius: 100,
-                width: 55,
-                height: 55,
-              }}
-            >
-              <Ionicons
-                style={{ alignSelf: "center" }}
-                name="log-out-outline"
-                size={20}
-                color={"black"}
-              />
-            </View>
-            <TouchableOpacity>
-              <Text style={{ fontSize: 16, fontFamily: "outfit-bold" }}>
-                Log Out
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <TouchableOpacity>
-            <AntDesign name="right" size={26} color={"#CBD5E0"} />
-          </TouchableOpacity>
-        </TouchableOpacity>
-      </View>
+
+      {/* Logout Button */}
+      <TouchableOpacity
+        style={tw`mx-6 my-8 bg-red-500 p-4 rounded-xl flex-row justify-center items-center`}
+        onPress={() => {/* Handle logout */}}
+      >
+        <Ionicons name="log-out" size={24} color="white" style={tw`mr-2`} />
+        <Text style={tw`text-white font-bold text-lg`}>Logout</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  navbar: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingHorizontal: 20,
-      paddingTop: 40,
-      paddingBottom: 10,
-      backgroundColor: '#fff',
-      shadowColor: '#000',
-      shadowOpacity: 0.1,
-      shadowRadius: 5,
-      marginBottom: 15,
-  },
-  breadcrumb: {
-      flexDirection: 'row',
-      alignItems: 'center',
-  },
-  breadcrumbText: {
-      fontSize: 16,
-      color: '#666',
-  },
-  navRight: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 15,
-  },
-});

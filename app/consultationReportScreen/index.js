@@ -1,6 +1,8 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Animated } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Animated } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import tw from 'tailwind-react-native-classnames';
 
 export default function ConsultationReport({ navigation }) {
     const reportDetails = {
@@ -13,9 +15,8 @@ export default function ConsultationReport({ navigation }) {
         nextVisit: "December 12, 2024"
     };
 
-    const fadeAnim = new Animated.Value(0); // Initial fade value
+    const fadeAnim = new Animated.Value(0);
 
-    // Fade in animation
     React.useEffect(() => {
         Animated.timing(fadeAnim, {
             toValue: 1,
@@ -25,79 +26,134 @@ export default function ConsultationReport({ navigation }) {
     }, []);
 
     return (
-        <View style={styles.container}>
-                {/* Navbar */}
-                <View style={styles.navbar}>
-                    <View style={styles.breadcrumb}>
-                        <TouchableOpacity>
-                            <Text style={styles.breadcrumbText}>Report</Text>
-                        </TouchableOpacity>
-                    </View>
-                    <View style={styles.navRight}>
-                        <TouchableOpacity style={styles.notificationButton}>
-                            <Ionicons name="notifications-outline" size={24} color="#1c0c4a" />
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                            <Ionicons name="person-circle-outline" size={28} color="#1c0c4a" />
+        <View style={tw`flex-1 bg-gray-50`}>
+            <LinearGradient
+                colors={['#3B82F6', '#2563EB']}
+                style={tw`pt-12 pb-6 px-4 rounded-b-3xl`}
+            >
+                <View style={tw`flex-row justify-between items-center`}>
+                    <TouchableOpacity 
+                        style={tw`flex-row items-center`}
+                        onPress={() => navigation.goBack()}
+                    >
+                        <Ionicons name="chevron-back" size={24} color="white" />
+                        <Text style={[tw`text-white text-lg ml-1`, { fontFamily: 'outfit-medium' }]}>Report</Text>
+                    </TouchableOpacity>
+                    <View style={tw`flex-row items-center space-x-4`}>
+                        <TouchableOpacity style={tw`relative`}>
+                            <Ionicons name="notifications-outline" size={24} color="white" />
+                            <View style={tw`absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white`} />
                         </TouchableOpacity>
                     </View>
                 </View>
-            <ScrollView>
-                {/* Main Content */}
-                <Animated.View style={[styles.mainContent, { opacity: fadeAnim }]}>
-                    
-                    {/* Patient and Doctor Info */}
-                    <View style={styles.card}>
-                        <View style={styles.cardHeader}>
-                            <Ionicons name="person-circle" size={24} color="#fff" />
-                            <Text style={styles.cardHeaderText}>Patient Information</Text>
+            </LinearGradient>
+
+            <ScrollView style={tw`flex-1 px-4 py-6`}>
+                <Animated.View style={{ opacity: fadeAnim }}>
+                    {/* Patient Info Card */}
+                    <View style={tw`bg-white rounded-2xl p-5 shadow-lg mb-4`}>
+                        <LinearGradient
+                            colors={['#3B82F6', '#2563EB']}
+                            style={tw`flex-row items-center p-3 rounded-xl mb-4`}
+                        >
+                            <Ionicons name="person-circle" size={24} color="white" />
+                            <Text style={[tw`text-white text-lg ml-2`, { fontFamily: 'outfit-bold' }]}>
+                                Patient Information
+                            </Text>
+                        </LinearGradient>
+                        <View style={tw`space-y-2`}>
+                            <Text style={[tw`text-gray-900`, { fontFamily: 'outfit-bold' }]}>
+                                {reportDetails.patientName}
+                            </Text>
+                            <Text style={[tw`text-gray-600`, { fontFamily: 'outfit' }]}>
+                                Consultation: {reportDetails.consultationDate}
+                            </Text>
                         </View>
-                        <Text style={styles.infoText}>Name: {reportDetails.patientName}</Text>
-                        <Text style={styles.infoText}>Consultation Date: {reportDetails.consultationDate}</Text>
                     </View>
 
-                    <View style={styles.card}>
-                        <View style={styles.cardHeader}>
-                            <Ionicons name="medkit" size={24} color="#fff" />
-                            <Text style={styles.cardHeaderText}>Doctor Information</Text>
+                    {/* Doctor Info Card */}
+                    <View style={tw`bg-white rounded-2xl p-5 shadow-lg mb-4`}>
+                        <LinearGradient
+                            colors={['#3B82F6', '#2563EB']}
+                            style={tw`flex-row items-center p-3 rounded-xl mb-4`}
+                        >
+                            <Ionicons name="medkit" size={24} color="white" />
+                            <Text style={[tw`text-white text-lg ml-2`, { fontFamily: 'outfit-bold' }]}>
+                                Doctor Information
+                            </Text>
+                        </LinearGradient>
+                        <View style={tw`space-y-2`}>
+                            <Text style={[tw`text-gray-900`, { fontFamily: 'outfit-bold' }]}>
+                                {reportDetails.doctor}
+                            </Text>
+                            <Text style={[tw`text-gray-600`, { fontFamily: 'outfit' }]}>
+                                {reportDetails.specialty}
+                            </Text>
                         </View>
-                        <Text style={styles.infoText}>Doctor: {reportDetails.doctor}</Text>
-                        <Text style={styles.infoText}>Specialty: {reportDetails.specialty}</Text>
                     </View>
 
-                    {/* Diagnosis and Treatment */}
-                    <View style={styles.card}>
-                        <View style={styles.cardHeader}>
-                            <Ionicons name="pulse" size={24} color="#fff" />
-                            <Text style={styles.cardHeaderText}>Diagnosis</Text>
-                        </View>
-                        <Text style={styles.infoText}>{reportDetails.diagnosis}</Text>
+                    {/* Diagnosis Card */}
+                    <View style={tw`bg-white rounded-2xl p-5 shadow-lg mb-4`}>
+                        <LinearGradient
+                            colors={['#3B82F6', '#2563EB']}
+                            style={tw`flex-row items-center p-3 rounded-xl mb-4`}
+                        >
+                            <Ionicons name="pulse" size={24} color="white" />
+                            <Text style={[tw`text-white text-lg ml-2`, { fontFamily: 'outfit-bold' }]}>
+                                Diagnosis
+                            </Text>
+                        </LinearGradient>
+                        <Text style={[tw`text-gray-700`, { fontFamily: 'outfit' }]}>
+                            {reportDetails.diagnosis}
+                        </Text>
                     </View>
 
-                    <View style={styles.card}>
-                        <View style={styles.cardHeader}>
-                            <Ionicons name="medical" size={24} color="#fff" />
-                            <Text style={styles.cardHeaderText}>Treatment</Text>
-                        </View>
-                        <Text style={styles.infoText}>{reportDetails.treatment}</Text>
+                    {/* Treatment Card */}
+                    <View style={tw`bg-white rounded-2xl p-5 shadow-lg mb-4`}>
+                        <LinearGradient
+                            colors={['#3B82F6', '#2563EB']}
+                            style={tw`flex-row items-center p-3 rounded-xl mb-4`}
+                        >
+                            <Ionicons name="medical" size={24} color="white" />
+                            <Text style={[tw`text-white text-lg ml-2`, { fontFamily: 'outfit-bold' }]}>
+                                Treatment Plan
+                            </Text>
+                        </LinearGradient>
+                        <Text style={[tw`text-gray-700`, { fontFamily: 'outfit' }]}>
+                            {reportDetails.treatment}
+                        </Text>
                     </View>
 
-                    {/* Next Appointment */}
-                    <View style={styles.card}>
-                        <View style={styles.cardHeader}>
-                            <Ionicons name="calendar" size={24} color="#fff" />
-                            <Text style={styles.cardHeaderText}>Next Visit</Text>
-                        </View>
-                        <Text style={styles.infoText}>{reportDetails.nextVisit}</Text>
+                    {/* Next Visit Card */}
+                    <View style={tw`bg-white rounded-2xl p-5 shadow-lg mb-6`}>
+                        <LinearGradient
+                            colors={['#3B82F6', '#2563EB']}
+                            style={tw`flex-row items-center p-3 rounded-xl mb-4`}
+                        >
+                            <Ionicons name="calendar" size={24} color="white" />
+                            <Text style={[tw`text-white text-lg ml-2`, { fontFamily: 'outfit-bold' }]}>
+                                Next Appointment
+                            </Text>
+                        </LinearGradient>
+                        <Text style={[tw`text-gray-700`, { fontFamily: 'outfit' }]}>
+                            {reportDetails.nextVisit}
+                        </Text>
                     </View>
 
                     {/* Action Buttons */}
-                    <View style={styles.buttonContainer}>
-                        <TouchableOpacity style={styles.buttonBack} onPress={() => navigation.goBack()}>
-                            <Text style={styles.buttonText}>Back to Dashboard</Text>
+                    <View style={tw`flex-row justify-between mb-8`}>
+                        <TouchableOpacity 
+                            style={tw`bg-gray-100 w-5/12 rounded-xl py-4 items-center`}
+                            onPress={() => navigation.goBack()}
+                        >
+                            <Text style={[tw`text-gray-700`, { fontFamily: 'outfit-medium' }]}>
+                                Back
+                            </Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.buttonDownload}>
-                            <Text style={styles.buttonText}>Download Report</Text>
+                        <TouchableOpacity style={tw`bg-blue-500 w-5/12 rounded-xl py-4 items-center`}>
+                            <Text style={[tw`text-white`, { fontFamily: 'outfit-medium' }]}>
+                                Download PDF
+                            </Text>
                         </TouchableOpacity>
                     </View>
                 </Animated.View>
@@ -105,106 +161,3 @@ export default function ConsultationReport({ navigation }) {
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f4f7fc',
-    },
-    navbar: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingTop: 40,
-        paddingBottom: 10,
-        // backgroundColor: '#1c0c4a',
-        backgroundColor: '#fff',
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        elevation: 5,
-    },
-    breadcrumb: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    breadcrumbText: {
-        fontSize: 16,
-        // color: '#fff',
-        fontWeight: 'bold',
-    },
-    navRight: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 20,
-    },
-    notificationButton: {
-        position: 'relative',
-    },
-    mainContent: {
-        padding: 20,
-    },
-    title: {
-        fontSize: 34,
-        fontWeight: '700',
-        color: '#1c0c4a',
-        marginBottom: 30,
-        textAlign: 'center',
-    },
-    card: {
-        backgroundColor: '#fff',
-        borderRadius: 20,
-        marginBottom: 15,
-        padding: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    cardHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 10,
-        backgroundColor: '#1c0c4a',
-        borderRadius: 10,
-        paddingVertical: 8,
-        paddingHorizontal: 15,
-    },
-    cardHeaderText: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#fff',
-        marginLeft: 10,
-    },
-    infoText: {
-        fontSize: 16,
-        color: '#555',
-        marginBottom: 5,
-    },
-    buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 40,
-    },
-    buttonBack: {
-        backgroundColor: '#ff5c8f',
-        width: '48%',
-        borderRadius: 12,
-        paddingVertical: 14,
-        alignItems: 'center',
-    },
-    buttonDownload: {
-        backgroundColor: '#f7b731',
-        width: '48%',
-        borderRadius: 12,
-        paddingVertical: 14,
-        alignItems: 'center',
-    },
-    buttonText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#fff',
-    },
-});

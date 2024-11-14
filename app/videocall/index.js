@@ -9,7 +9,7 @@ const VideoCallScreen = ({ navigation, route }) => {
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   return (
-    <View style={tw`flex-1 bg-gray-100`}>
+    <View style={tw`flex-1 bg-gray-100 mt-8`}>
       {/* Header */}
       <View style={tw`flex-row items-center p-4 absolute top-0 z-10 w-full`}>
         <TouchableOpacity 
