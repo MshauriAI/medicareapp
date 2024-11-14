@@ -20,82 +20,84 @@ export default function Home({ navigation }) {
     const year = date.getFullYear();
 
 
-
     useEffect(() => {
         const getUserInfo = async () => {
-          try {
-            const userInfo = await AsyncStorage.getItem('userInfo');
-            if (userInfo !== null) {
-              const parsedUser = JSON.parse(userInfo);
-              setUser(parsedUser);
-              console.log(parsedUser);
-    
-              if (parsedUser.imageUri) {
-                setImageUri(parsedUser.imageUri);
-                console.log("Retrieved imageUri:", parsedUser.imageUri);
-              } else {
-                console.log("No property");
-              }
-    
-              if (parsedUser.token) {
-                getUpcomingAppointmentsCount(parsedUser.token);
-                getUpcomingAppointment(parsedUser.token);
-              } else {
-                console.log("No token available");
-              }
+            try {
+                const userInfo = await AsyncStorage.getItem('userInfo');
+                if (userInfo !== null) {
+                const parsedUser = JSON.parse(userInfo);
+                setUser(parsedUser);
+                console.log(parsedUser);
+        
+                if (parsedUser.imageUri) {
+                    setImageUri(parsedUser.imageUri);
+                    console.log("Retrieved imageUri:", parsedUser.imageUri);
+                } else {
+                    console.log("No property");
+                }
+        
+                if (parsedUser.token) {
+                    getUpcomingAppointmentsCount(parsedUser.token);
+                    getUpcomingAppointment(parsedUser.token);
+                } else {
+                    console.log("No token available");
+                }
+                }
+            } catch (error) {
+                console.error("Error retrieving user info:", error);
+            } 
+            };
+        
+            getUserInfo();
+        }, []);
+
+        const url = 'https://stallion-holy-informally.ngrok-free.app'
+
+        const role = 'Patient';
+
+        const getUpcomingAppointmentsCount = async (token) => {
+            try {
+            const response =  await fetch(url + '/api/v1.0/appointments/count', {
+                method: 'GET',
+                headers: {
+                'Authorization': `Bearer ${token}`
+                },
+            });
+        
+            if (response.ok) {
+                const data = await response.json();
+                const upcomingAppointmentsCount = data.totalAppointments;
+                setUpcomingAppointments(upcomingAppointmentsCount);            
+            } else {
+                console.log('failed to fetch upcoming appointments');
             }
-          } catch (error) {
-            console.error("Error retrieving user info:", error);
-          } 
+            } catch (error) {
+            console.error("Error fetching upcoming appointments: ", error);
+            }
         };
-    
-        getUserInfo();
-      }, []);
 
-      const getUpcomingAppointmentsCount = async (token) => {
-        try {
-          const response =  await fetch('https://stallion-holy-informally.ngrok-free.app/api/v1.0/appointments/count', {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`
-            },
-          });
-    
-          if (response.ok) {
-            const data = await response.json();
-            const upcomingAppointmentsCount = data.totalAppointments;
-            setUpcomingAppointments(upcomingAppointmentsCount);
-            
-          } else {
-            console.log('failed to fetch upcoming appointments');
-          }
-        } catch (error) {
-          console.error("Error fetching upcoming appointments: ", error);
+        const getUpcomingAppointment = async (token) => {
+            try {
+            const response =  await fetch(url + '/api/v1.0/appointments/upcoming', {
+                method: 'GET',
+                headers: {
+                'Authorization': `Bearer ${token}`
+                },
+            });
+        
+            if (response.ok) {
+                const data = await response.json();
+                const upcoming = data.appointments;
+                console.log("test", upcoming);
+                setUpcomingAppointment(upcoming);
+                console.log('upcoming: ',upcomingAppointment)
+            } else {
+                console.log('failed to fetch upcoming appointments');
+            }
+            } catch (error) {
+            console.error("Error fetching upcoming appointments: ", error);
+            }
         }
-      };
-
-      const getUpcomingAppointment = async (token) => {
-        try {
-          const response =  await fetch('https://stallion-holy-informally.ngrok-free.app/api/v1.0/appointments/upcoming', {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`
-            },
-          });
-    
-          if (response.ok) {
-            const data = await response.json();
-            const upcoming = data.appointments;
-            console.log("test", upcoming);
-            setUpcomingAppointment(upcoming);
-            console.log('upcoming: ',upcomingAppointment)
-          } else {
-            console.log('failed to fetch upcoming appointments');
-          }
-        } catch (error) {
-          console.error("Error fetching upcoming appointments: ", error);
-        }
-      }
 
     const handlePress = (meet_link) => {
         if (upcomingAppointments !== 0) {
@@ -138,12 +140,12 @@ export default function Home({ navigation }) {
                 >
                     <View style={styles.upcomingHeader}>
                         <Text style={styles.upcomingTitle}>Upcoming Appointments ({upcomingAppointments})</Text>
-                        <TouchableOpacity onPress={() => navigation.navigate('Appointments')}>
+                        <TouchableOpacity onPress={() => router.push('../../(tabs)/appointment')}>
                             <Text style={styles.viewAllText}>View All</Text>
                         </TouchableOpacity>
                     </View>
                     
-                    {upcomingAppointment ? (
+                    {upcomingAppointment && upcomingAppointment.length > 0? (
                         <View style={styles.appointmentDetails}>
                             <Image 
                                 source={{ uri: upcomingAppointment[0].doctor_image_url }} 
@@ -171,13 +173,6 @@ export default function Home({ navigation }) {
                             <View style={styles.emptyIconContainer}>
                                 <Ionicons name="calendar-outline" size={32} color="#666" />
                             </View>
-                            <Text style={styles.emptyStateText}>No upcoming appointments</Text>
-                            {/* <TouchableOpacity 
-                                style={styles.bookButton}
-                                onPress={() => navigation.navigate('Appointments')}
-                            >
-                                <Text style={styles.bookButtonText}>Book Now</Text>
-                            </TouchableOpacity> */}
                         </View>
                     )}
                 </View>
@@ -188,7 +183,7 @@ export default function Home({ navigation }) {
 
                 <TouchableOpacity 
                     style={styles.button}
-                    onPress={() => navigation.navigate('Booking')}
+                    onPress={() => router.push('../../(tabs)/booking/')}
                 >
                     <Text style={styles.buttonText}>Book Consultation</Text>
                 </TouchableOpacity>

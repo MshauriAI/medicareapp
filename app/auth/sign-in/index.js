@@ -19,6 +19,7 @@ import Toast from "react-native-toast-message";
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as LocalAuthentication from 'expo-local-authentication';
+import { useRouter } from 'expo-router';
 
 
 export default function SignInScreen({ navigation }) {
@@ -26,6 +27,7 @@ export default function SignInScreen({ navigation }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
+    const router = useRouter();
 
     const handleSignIn = async () => {
       setLoading(true);
@@ -39,12 +41,18 @@ export default function SignInScreen({ navigation }) {
         return;
       }
   
+      const role = 'Patient';
+
       try {
         const response = await axios.post(
           "https://stallion-holy-informally.ngrok-free.app/api/v1.0/signin",
           {
             email,
             password,
+            role
+          },
+          {
+            headers: {"Content-Type": "application/json" }
           }
         );
   
@@ -60,9 +68,9 @@ export default function SignInScreen({ navigation }) {
             email: response.data.email,
             number: response.data.number,
             token: response.data.access_token,
-            imageUri: response.data.imageUri
+            imageUri: response.data.image_uri
           }));
-          navigation.navigate("Home");  // Ensure this is reached
+          router.push('../../(tabs)/home/');
 
         Toast.show({
           type: "success",
@@ -131,7 +139,7 @@ export default function SignInScreen({ navigation }) {
               )}
             </TouchableOpacity>
             <View style={tw`w-full pb-6 px-4`}>
-            <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
+            <TouchableOpacity onPress={() => router.push('/auth/sign-up')}>
               <Text style={tw`text-sm text-center`}>
                 Don’t have an account?{" "}
                 <Text style={tw`text-blue-500 font-bold`}

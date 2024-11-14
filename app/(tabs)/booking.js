@@ -31,6 +31,7 @@ export default function DoctorAppointmentScreen({ navigation }) {
     const [user, setUser] = useState(null);
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showTimePicker, setShowTimePicker] = useState(false);
+    const [refresh, setRefresh] = useState(false);
 
     useEffect(() => {
         const getUserInfoAndLoadDoctors = async () => {
@@ -55,9 +56,11 @@ export default function DoctorAppointmentScreen({ navigation }) {
         getUserInfoAndLoadDoctors();
     }, []);
 
+    const url = 'https://stallion-holy-informally.ngrok-free.app'
+
     const fetchDoctors = async (token) => {
         try {
-            const response = await fetch('https://stallion-holy-informally.ngrok-free.app/doctors', {
+            const response = await fetch(url + '/doctors', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -77,14 +80,49 @@ export default function DoctorAppointmentScreen({ navigation }) {
         }
     };
 
+    
+    const scheduleAppointment = async (token) => {
+        try {
+            const appointmentData = {
+                date: appointmentDate.toISOString().slice(0, 10),
+                time: appointmentTime.toISOString().slice(11, 19),
+                method: consultationType,
+                status: "upcoming",
+                purpose: consultationPurpose,
+                details: additionalDetails,
+                email: selectedDoctor
+            };
+            const response = await fetch(url + '/api/v1.0/appointments', {
+                method: 'POST',
+                body: JSON.stringify(appointmentData),
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch doctors');
+
+            const data = await response.json();
+            if (!data.doctors) throw new Error('Invalid response format: missing doctors array');
+
+            setDoctors(data.doctors);
+            setModalVisible(false);
+            setRefresh(prev => !prev);
+        } catch (error) {
+            setError(error.message);
+            console.error('Error fetching doctors:', error);
+        }
+    };
+
 
     const filteredDoctors = doctors.filter(doctor => 
         doctor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        doctor.specialty.toLowerCase().includes(searchQuery.toLowerCase())
+        doctor.specialization.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const openBookingModal = (doctor) => {
-        setSelectedDoctor(doctor);
+        setSelectedDoctor(doctor.email);
         setModalVisible(true);
     };
 
@@ -121,7 +159,7 @@ export default function DoctorAppointmentScreen({ navigation }) {
             <View style={styles.searchContainer}>
                 <Ionicons name="search" size={20} color="#2575fc" />
                 <TextInput
-                    placeholder="Search for doctors or specialties"
+                    placeholder="Search for doctors or specialization"
                     placeholderTextColor="#888"
                     style={styles.searchInput}
                     value={searchQuery}
@@ -269,6 +307,7 @@ export default function DoctorAppointmentScreen({ navigation }) {
                                     onPress={() => {
                                         setModalVisible(false);
                                         setSelectedDoctor(null);
+                                        scheduleAppointment(user.token);
                                     }}
                                 >
                                     <Text style={styles.confirmButtonText}>Confirm Appointment</Text>

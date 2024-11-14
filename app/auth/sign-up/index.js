@@ -4,10 +4,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import { MaterialIcons } from '@expo/vector-icons';
 import tw from "tailwind-react-native-classnames";
+import { useRouter } from 'expo-router';
+
 
 export default function SignUpScreen({ navigation }) {
     const [gender, setGender] = useState("");
     const [passwordVisible, setPasswordVisible] = useState(false);
+    const router = useRouter();
 
 
     return (
@@ -68,12 +71,12 @@ export default function SignUpScreen({ navigation }) {
             </View>
             
             <TouchableOpacity style={styles.button}
-                onPress={() => navigation.navigate('Home')}
+                onPress={() => router.push('../../(tabs)/home/')}
             >
                 <Text style={styles.buttonText}>Create Account</Text>
             </TouchableOpacity>
             <View style={tw`w-full pb-6 px-4`}>
-            <TouchableOpacity onPress={() => navigation.navigate("Signin")}>
+            <TouchableOpacity onPress={() => router.push('/auth/sign-in')}>
               <Text style={tw`text-sm text-center`}>
                 Don’t have an account?{" "}
                 <Text style={tw`text-blue-500 font-bold`}>Sign In</Text>
