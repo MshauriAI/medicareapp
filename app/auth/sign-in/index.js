@@ -1,224 +1,225 @@
 import React, { useState } from 'react';
 import { 
   View, 
-  Text, 
-  TextInput, 
-  StyleSheet, 
+  Text,
+  TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
   ActivityIndicator,
   Platform,
   ScrollView,
-  StatusBar, } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; 
-import { Picker } from '@react-native-picker/picker';
-import { MaterialIcons } from '@expo/vector-icons';
+  StatusBar,
+} from 'react-native';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import tw from "tailwind-react-native-classnames";
 import axios from "axios";
 import Toast from "react-native-toast-message";
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as LocalAuthentication from 'expo-local-authentication';
-
+import { Picker } from '@react-native-picker/picker';
+import { useRouter } from 'expo-router';
 
 export default function SignInScreen({ navigation }) {
-    const [passwordVisible, setPasswordVisible] = useState(false);
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [loading, setLoading] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter(); // Add router hook
 
-    const handleSignIn = async () => {
-      setLoading(true);
-      if (!email || !password) {
-        Toast.show({
-          type: "error",
-          text1: "Validation Error",
-          text2: "All fields are required",
-        });
-        setLoading(false);
-        return;
-      }
-  
-      try {
-        const response = await axios.post(
-          "https://stallion-holy-informally.ngrok-free.app/api/v1.0/signin",
-          {
-            email,
-            password,
-          }
-        );
-  
-        const token = response.data.access_token;
-        console.log(token);
-  
-        if (response.status == 200 && token != "") {
-          console.log("DONE")
-          await SecureStore.setItemAsync('token', token);
-          await AsyncStorage.setItem('userInfo', JSON.stringify({
-            firstName: response.data.firstName,
-            lastName: response.data.lastName,
-            email: response.data.email,
-            number: response.data.number,
-            token: response.data.access_token,
-            imageUri: response.data.imageUri
-          }));
-          navigation.navigate("Home");  // Ensure this is reached
+  const handleSignIn = async () => {
+    setLoading(true);
+    if (!email || !password) {
+      Toast.show({
+        type: "error",
+        text1: "Validation Error",
+        text2: "All fields are required",
+      });
+      setLoading(false);
+      return;
+    }
 
-        Toast.show({
-          type: "success",
-          text1: "Success",
-          text2: "Signin Successful",
-        });
-        } else {
-          setLoading(false);
-          Toast.show({
-            type: "error",
-            text1: "Sign-in Failed",
-            text2: response.data.message || "Please try again.",
-          });
+    try {
+      const response = await axios.post(
+        "https://stallion-holy-informally.ngrok-free.app/api/v1.0/signin",
+        {
+          email,
+          password,
         }
-      } catch (error) {
-        console.error("Sign-in error:", error);
+      );
+
+      const token = response.data.access_token;
+      console.log(token);
+
+      if (response.status == 200 && token != "") {
+        console.log("DONE")
+        await SecureStore.setItemAsync('token', token);
+        await AsyncStorage.setItem('userInfo', JSON.stringify({
+          firstName: response.data.firstName,
+          lastName: response.data.lastName,
+          email: response.data.email,
+          number: response.data.number,
+          token: response.data.access_token,
+          imageUri: response.data.imageUri
+        }));
+        navigation.navigate("Home");  // Ensure this is reached
+
+      Toast.show({
+        type: "success",
+        text1: "Success",
+        text2: "Signin Successful",
+      });
+      } else {
+        setLoading(false);
         Toast.show({
           type: "error",
-          text1: "Error",
-          text2: error.response?.data.message || "An unexpected error occurred",
+          text1: "Sign-in Failed",
+          text2: response.data.message || "Please try again.",
         });
-        setLoading(false);
       }
-    };
+    } catch (error) {
+      console.error("Sign-in error:", error);
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: error.response?.data.message || "An unexpected error occurred",
+      });
+      setLoading(false);
+    }
+  };
 
-    return (
-      <>
-        <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-      <KeyboardAvoidingView  style={tw`flex-1 py-3 px-4 bg-white`}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}>
-        <ScrollView contentContainerStyle={styles.container}>
-            <Text style={styles.title}>SignIn</Text>
+  return (
+    <LinearGradient
+      colors={['#ffffff', '#f3f4f6', '#ffffff']}
+      style={tw`flex-1`}
+    >
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={tw`flex-1`}
+      >
+        <ScrollView 
+          contentContainerStyle={tw`flex-grow justify-center px-6 py-10`}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header Section */}
+          <View style={tw`mb-12`}>
+            <Text style={[tw`text-4xl text-gray-800 text-center mb-3`, { fontFamily: 'outfit-bold' }]}>
+              Welcome Back
+            </Text>
+            <Text style={[tw`text-gray-500 text-center`, { fontFamily: 'outfit' }]}>
+              Sign in to continue your healthcare journey
+            </Text>
+          </View>
 
-            <View style={styles.inputContainer}>
-                <MaterialIcons name="email" size={20} color="#666" style={styles.icon} />
-                <TextInput style={styles.input} placeholder="e.g abc@gmail.com" placeholderTextColor="#999" keyboardType="email-address" 
+          {/* Input Fields */}
+          <View style={tw`space-y-4`}>
+            {/* Email Input */}
+            <View style={tw`bg-white rounded-2xl px-4 py-3 shadow-md border border-gray-100`}>
+              <Text style={[tw`text-xs text-gray-500 mb-1`, { fontFamily: 'outfit' }]}>Email</Text>
+              <View style={tw`flex-row items-center`}>
+                <MaterialIcons name="email" size={20} color="#6b7280" />
+                <TextInput
+                  style={[tw`flex-1 ml-3 text-gray-800`, { fontFamily: 'outfit' }]}
+                  placeholder="Enter your email"
+                  placeholderTextColor="#9ca3af"
+                  keyboardType="email-address"
                   value={email}
                   onChangeText={setEmail}
                 />
+              </View>
             </View>
 
-            <View style={styles.inputContainer}>
-                <MaterialIcons name="lock" size={20} color="#666" style={styles.icon} />
+            {/* Password Input */}
+            <View style={tw`bg-white rounded-2xl px-4 mt-3 py-3 shadow-md border border-gray-100`}>
+              <Text style={[tw`text-xs text-gray-500 mb-1`, { fontFamily: 'outfit' }]}>Password</Text>
+              <View style={tw`flex-row items-center`}>
+                <MaterialIcons name="lock" size={20} color="#6b7280" />
                 <TextInput
-                    style={styles.input}
-                    placeholder="Enter your password"
-                    placeholderTextColor="#999"
-                    secureTextEntry={!passwordVisible}
-                    value={password}
-                    onChangeText={setPassword}
+                  style={[tw`flex-1 ml-3 text-gray-800`, { fontFamily: 'outfit' }]}
+                  placeholder="Enter your password"
+                  placeholderTextColor="#9ca3af"
+                  secureTextEntry={!passwordVisible}
+                  value={password}
+                  onChangeText={setPassword}
                 />
                 <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
-                    <Ionicons name={passwordVisible ? "eye-off" : "eye"} size={20} color="#666" style={styles.icon} />
+                  <Ionicons 
+                    name={passwordVisible ? "eye-off" : "eye"} 
+                    size={20} 
+                    color="#6b7280" 
+                  />
                 </TouchableOpacity>
+              </View>
             </View>
-            
-            <TouchableOpacity
-              style={tw`bg-blue-500 w-full rounded-full py-3 mb-6 shadow-lg`}
-              onPress={handleSignIn}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator size="small" color="#ffffff" />
-              ) : (
-                <Text style={tw`text-white text-center text-lg`}>Sign In</Text>
-              )}
-            </TouchableOpacity>
-            <View style={tw`w-full pb-6 px-4`}>
-            <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
-              <Text style={tw`text-sm text-center`}>
-                Don’t have an account?{" "}
-                <Text style={tw`text-blue-500 font-bold`}
-                
-                >Sign Up</Text>
+          </View>
+
+          {/* Forgot Password */}
+          <TouchableOpacity style={tw`my-4`}>
+            <Text style={[tw`text-right text-blue-500`, { fontFamily: 'outfit-medium' }]}>
+              Forgot Password?
+            </Text>
+          </TouchableOpacity>
+
+          {/* Sign In Button */}
+          <TouchableOpacity
+            style={[
+              tw`bg-blue-500 rounded-2xl py-4 shadow-lg mt-6`,
+              loading && tw`opacity-70`
+            ]}
+            onPress={handleSignIn}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color="#ffffff" />
+            ) : (
+              <Text style={[tw`text-white text-center text-lg`, { fontFamily: 'outfit-medium' }]}>
+                Sign In
               </Text>
-            </TouchableOpacity>
+            )}
+          </TouchableOpacity>
+
+          {/* Sign Up Link */}
+          <View style={tw`mt-8`}>
+            <Text style={[tw`text-center text-gray-600`, { fontFamily: 'outfit' }]}>
+              Don't have an account?{" "}
+              <Text 
+                style={[tw`text-blue-500 font-medium`, { fontFamily: 'outfit-medium' }]}
+                onPress={() => router.push('/home')}
+              >
+                Sign Up
+              </Text>
+            </Text>
+          </View>
+
+          {/* Social Sign In Options */}
+          <View style={tw`mt-8`}>
+            <View style={tw`flex-row items-center mb-6`}>
+              <View style={tw`flex-1 h-px bg-gray-200`} />
+              <Text style={[tw`mx-4 text-gray-500`, { fontFamily: 'outfit' }]}>
+                Or continue with
+              </Text>
+              <View style={tw`flex-1 h-px bg-gray-200`} />
+            </View>
+
+            <View style={tw`flex-row justify-center space-x-4`}>
+              {['google', 'apple', 'facebook'].map((provider) => (
+                <TouchableOpacity 
+                  key={provider}
+                  style={tw`bg-white p-4 rounded-full shadow-md border border-gray-100`}
+                >
+                  <Ionicons 
+                    name={`logo-${provider}`} 
+                    size={24} 
+                    color="#374151"
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-      </>
-    );
+    </LinearGradient>
+  );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flexGrow: 1,
-        padding: 20,
-        backgroundColor: '#F2F2F2',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    title: {
-        fontSize: 32,
-        fontWeight: '700',
-        color: '#333',
-        marginBottom: 30,
-        textAlign: 'center',
-    },
-     halfInput: {
-        width: '48%',
-    },
-    inputRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '100%',
-    },
-    inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        width: '100%',
-        borderColor: '#ddd',
-        borderWidth: 1,
-        borderRadius: 12,
-        backgroundColor: '#FFF',
-        paddingHorizontal: 15,
-        paddingVertical: 10,
-        marginBottom: 15,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 3,
-    },
-    input: {
-        flex: 1,
-        paddingLeft: 10,
-        fontSize: 16,
-        color: '#333',
-    },
-    icon: {
-        marginRight: 5,
-    },
-    pickerContainer: {
-        paddingVertical: 0,
-    },
-    picker: {
-        height: 50,
-        flex: 1,
-        color: '#333',
-    },
-    button: {
-        backgroundColor: '#007BFF',
-        paddingVertical: 15,
-        borderRadius: 12,
-        width: '100%',
-        alignItems: 'center',
-        marginTop: 20,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 6,
-        elevation: 4,
-    },
-    buttonText: {
-        color: '#FFF',
-        fontSize: 18,
-        fontWeight: '600',
-    },
-});

@@ -1,169 +1,231 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; 
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform
+} from 'react-native';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
-import { MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import tw from "tailwind-react-native-classnames";
+import { useRouter } from 'expo-router';
 
-export default function SignUpScreen({ navigation }) {
-    const [gender, setGender] = useState("");
-    const [passwordVisible, setPasswordVisible] = useState(false);
+export default function SignUpScreen() {
+  const router = useRouter(); // Add router hook
 
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    dob: '',
+    gender: '',
+    phone: '',
+    password: ''
+  });
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
-    return (
-        <ScrollView contentContainerStyle={styles.container}>
-            <Text style={styles.title}>Sign Up</Text>
-            <Text style={styles.subtitle}>Join us to start your journey</Text>
-            
-            <View style={styles.inputRow}>
-                <View style={[styles.inputContainer, styles.halfInput]}>
-                    <MaterialIcons name="person" size={22} color="#007BFF" style={styles.icon} />
-                    <TextInput style={styles.input} placeholder="First Name" placeholderTextColor="#999" />
+  return (
+    <LinearGradient
+      colors={['#ffffff', '#f3f4f6', '#ffffff']}
+      style={tw`flex-1`}
+    >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={tw`flex-1`}
+      >
+        <ScrollView 
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={tw`flex-grow px-6 py-10`}
+        >
+          {/* Header */}
+          <View style={tw`mb-10 mt-4`}>
+            <Text style={[tw`text-4xl text-gray-800 text-center mb-2`, { fontFamily: 'outfit-bold' }]}>
+              Create Account
+            </Text>
+            <Text style={[tw`text-gray-500 text-center`, { fontFamily: 'outfit' }]}>
+              Join us to start your healthcare journey
+            </Text>
+          </View>
+
+          {/* Form */}
+          <View style={tw`space-y-4`}>
+            {/* Name Row */}
+            <View style={tw`flex-row space-x-3`}>
+              <View style={tw`flex-1`}>
+                <Text style={[tw`text-xs text-gray-500 mb-1 ml-1`, { fontFamily: 'outfit' }]}>First Name</Text>
+                <View style={tw`bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100`}>
+                  <View style={tw`flex-row items-center`}>
+                    <MaterialIcons name="person" size={20} color="#6b7280" />
+                    <TextInput
+                      style={[tw`flex-1 ml-3 text-gray-800`, { fontFamily: 'outfit' }]}
+                      placeholder="John"
+                      placeholderTextColor="#9ca3af"
+                      value={formData.firstName}
+                      onChangeText={(text) => setFormData({...formData, firstName: text})}
+                    />
+                  </View>
                 </View>
-                <View style={[styles.inputContainer, styles.halfInput]}>
-                    <MaterialIcons name="person" size={22} color="#007BFF" style={styles.icon} />
-                    <TextInput style={styles.input} placeholder="Last Name" placeholderTextColor="#999" />
+              </View>
+
+              <View style={tw`flex-1`}>
+                <Text style={[tw`text-xs text-gray-500 mb-1 ml-1`, { fontFamily: 'outfit' }]}>Last Name</Text>
+                <View style={tw`bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100`}>
+                  <View style={tw`flex-row items-center`}>
+                    <MaterialIcons name="person" size={20} color="#6b7280" />
+                    <TextInput
+                      style={[tw`flex-1 ml-3 text-gray-800`, { fontFamily: 'outfit' }]}
+                      placeholder="Doe"
+                      placeholderTextColor="#9ca3af"
+                      value={formData.lastName}
+                      onChangeText={(text) => setFormData({...formData, lastName: text})}
+                    />
+                  </View>
                 </View>
+              </View>
             </View>
 
-            <View style={styles.inputContainer}>
-                <MaterialIcons name="email" size={22} color="#007BFF" style={styles.icon} />
-                <TextInput style={styles.input} placeholder="Email Address" placeholderTextColor="#999" keyboardType="email-address" />
+            {/* Email */}
+            <View>
+              <Text style={[tw`text-xs text-gray-500 mb-1 ml-1`, { fontFamily: 'outfit' }]}>Email</Text>
+              <View style={tw`bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100`}>
+                <View style={tw`flex-row items-center`}>
+                  <MaterialIcons name="email" size={20} color="#6b7280" />
+                  <TextInput
+                    style={[tw`flex-1 ml-3 text-gray-800`, { fontFamily: 'outfit' }]}
+                    placeholder="john.doe@example.com"
+                    placeholderTextColor="#9ca3af"
+                    keyboardType="email-address"
+                    value={formData.email}
+                    onChangeText={(text) => setFormData({...formData, email: text})}
+                  />
+                </View>
+              </View>
             </View>
 
-            <View style={styles.inputContainer}>
-                <MaterialIcons name="calendar-today" size={22} color="#007BFF" style={styles.icon} />
-                <TextInput style={styles.input} placeholder="Date of Birth" placeholderTextColor="#999" />
+            {/* Date of Birth */}
+            <View>
+              <Text style={[tw`text-xs text-gray-500 mb-1 ml-1`, { fontFamily: 'outfit' }]}>Date of Birth</Text>
+              <View style={tw`bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100`}>
+                <View style={tw`flex-row items-center`}>
+                  <MaterialIcons name="calendar-today" size={20} color="#6b7280" />
+                  <TextInput
+                    style={[tw`flex-1 ml-3 text-gray-800`, { fontFamily: 'outfit' }]}
+                    placeholder="MM/DD/YYYY"
+                    placeholderTextColor="#9ca3af"
+                    value={formData.dob}
+                    onChangeText={(text) => setFormData({...formData, dob: text})}
+                  />
+                </View>
+              </View>
             </View>
-            
-            <View style={[styles.inputContainer, styles.pickerContainer]}>
+
+            {/* Gender */}
+            <View>
+              <Text style={[tw`text-xs text-gray-500 mb-1 ml-1`, { fontFamily: 'outfit' }]}>Gender</Text>
+              <View style={tw`bg-white rounded-2xl px-4 shadow-sm border border-gray-100`}>
                 <Picker
-                    selectedValue={gender}
-                    style={styles.picker}
-                    onValueChange={(itemValue) => setGender(itemValue)}
+                  selectedValue={formData.gender}
+                  onValueChange={(value) => setFormData({...formData, gender: value})}
+                  style={[tw`text-gray-800`, { fontFamily: 'outfit' }]}
                 >
-                    <Picker.Item label="Select your gender" value="" />
-                    <Picker.Item label="Male" value="male" />
-                    <Picker.Item label="Female" value="female" />
-                    <Picker.Item label="Other" value="other" />
+                  <Picker.Item label="Select your gender" value="" />
+                  <Picker.Item label="Male" value="male" />
+                  <Picker.Item label="Female" value="female" />
+                  <Picker.Item label="Other" value="other" />
                 </Picker>
+              </View>
             </View>
 
-            <View style={styles.inputContainer}>
-                <MaterialIcons name="phone" size={22} color="#007BFF" style={styles.icon} />
-                <TextInput style={styles.input} placeholder="Phone Number" placeholderTextColor="#999" keyboardType="phone-pad" />
+            {/* Phone */}
+            <View>
+              <Text style={[tw`text-xs text-gray-500 mb-1 ml-1`, { fontFamily: 'outfit' }]}>Phone</Text>
+              <View style={tw`bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100`}>
+                <View style={tw`flex-row items-center`}>
+                  <MaterialIcons name="phone" size={20} color="#6b7280" />
+                  <TextInput
+                    style={[tw`flex-1 ml-3 text-gray-800`, { fontFamily: 'outfit' }]}
+                    placeholder="+1 (555) 000-0000"
+                    placeholderTextColor="#9ca3af"
+                    keyboardType="phone-pad"
+                    value={formData.phone}
+                    onChangeText={(text) => setFormData({...formData, phone: text})}
+                  />
+                </View>
+              </View>
             </View>
 
-            <View style={styles.inputContainer}>
-                <MaterialIcons name="lock" size={22} color="#007BFF" style={styles.icon} />
-                <TextInput
-                    style={styles.input}
-                    placeholder="Password"
-                    placeholderTextColor="#999"
+            {/* Password */}
+            <View>
+              <Text style={[tw`text-xs text-gray-500 mb-1 ml-1`, { fontFamily: 'outfit' }]}>Password</Text>
+              <View style={tw`bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100`}>
+                <View style={tw`flex-row items-center`}>
+                  <MaterialIcons name="lock" size={20} color="#6b7280" />
+                  <TextInput
+                    style={[tw`flex-1 ml-3 text-gray-800`, { fontFamily: 'outfit' }]}
+                    placeholder="Enter your password"
+                    placeholderTextColor="#9ca3af"
                     secureTextEntry={!passwordVisible}
-                />
-                <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
-                    <Ionicons name={passwordVisible ? "eye-off" : "eye"} size={22} color="#666" style={styles.icon} />
-                </TouchableOpacity>
+                    value={formData.password}
+                    onChangeText={(text) => setFormData({...formData, password: text})}
+                  />
+                  <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
+                    <Ionicons name={passwordVisible ? "eye-off" : "eye"} size={20} color="#6b7280" />
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
-            
-            <TouchableOpacity style={styles.button}
-                onPress={() => navigation.navigate('Home')}
+
+            {/* Sign Up Button */}
+            <TouchableOpacity
+              style={tw`bg-blue-500 rounded-2xl py-4 shadow-lg mt-6`}
+              onPress={() => router.push('/(tabs)/home')}
             >
-                <Text style={styles.buttonText}>Create Account</Text>
-            </TouchableOpacity>
-            <View style={tw`w-full pb-6 px-4`}>
-            <TouchableOpacity onPress={() => navigation.navigate("Signin")}>
-              <Text style={tw`text-sm text-center`}>
-                Don’t have an account?{" "}
-                <Text style={tw`text-blue-500 font-bold`}>Sign In</Text>
+              <Text style={[tw`text-white text-center text-lg`, { fontFamily: 'outfit-medium' }]}>
+                Create Account
               </Text>
             </TouchableOpacity>
+
+            {/* Social Sign Up */}
+            <View style={tw`mt-6`}>
+              <View style={tw`flex-row items-center mb-6`}>
+                <View style={tw`flex-1 h-px bg-gray-200`} />
+                <Text style={[tw`mx-4 text-gray-500`, { fontFamily: 'outfit' }]}>
+                  Or sign up with
+                </Text>
+                <View style={tw`flex-1 h-px bg-gray-200`} />
+              </View>
+
+              <View style={tw`flex-row justify-center space-x-4`}>
+                {['google', 'apple', 'facebook'].map((provider) => (
+                  <TouchableOpacity 
+                    key={provider}
+                    style={tw`bg-white p-4 rounded-full shadow-md border border-gray-100`}
+                  >
+                    <Ionicons name={`logo-${provider}`} size={24} color="#374151" />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            {/* Sign In Link */}
+            <View style={tw`mt-6`}>
+              <Text style={[tw`text-center text-gray-600`, { fontFamily: 'outfit' }]}>
+                Already have an account?{" "}
+                <Text 
+                  style={[tw`text-blue-500`, { fontFamily: 'outfit-medium' }]}
+                  onPress={() => router.push('/auth/sign-in')}
+                >
+                  Sign In
+                </Text>
+              </Text>
+            </View>
           </View>
         </ScrollView>
-    );
+      </KeyboardAvoidingView>
+    </LinearGradient>
+  );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flexGrow: 1,
-        padding: 20,
-        backgroundColor: '#FAFAFA',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    title: {
-        fontSize: 32,
-        fontWeight: '800',
-        color: '#333',
-        marginBottom: 5,
-        textAlign: 'center',
-    },
-    subtitle: {
-        fontSize: 16,
-        fontWeight: '400',
-        color: '#666',
-        marginBottom: 30,
-        textAlign: 'center',
-    },
-    halfInput: {
-        width: '48%',
-    },
-    inputRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '100%',
-    },
-    inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        width: '100%',
-        borderColor: '#ddd',
-        borderWidth: 1,
-        borderRadius: 15,
-        backgroundColor: '#FFF',
-        paddingHorizontal: 15,
-        paddingVertical: 12,
-        marginBottom: 15,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 10,
-        elevation: 4,
-    },
-    input: {
-        flex: 1,
-        paddingLeft: 10,
-        fontSize: 16,
-        color: '#333',
-    },
-    icon: {
-        marginRight: 5,
-    },
-    pickerContainer: {
-        paddingVertical: 0,
-    },
-    picker: {
-        height: 50,
-        flex: 1,
-        color: '#333',
-    },
-    button: {
-        backgroundColor: '#007BFF',
-        paddingVertical: 15,
-        borderRadius: 15,
-        width: '100%',
-        alignItems: 'center',
-        marginTop: 25,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 5,
-    },
-    buttonText: {
-        color: '#FFF',
-        fontSize: 18,
-        fontWeight: '700',
-    },
-});
