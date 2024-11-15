@@ -29,6 +29,8 @@ export default function SignInScreen({ navigation }) {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
+    const url = "https://stallion-holy-informally.ngrok-free.app";
+
     const handleSignIn = async () => {
       setLoading(true);
       if (!email || !password) {
@@ -45,7 +47,7 @@ export default function SignInScreen({ navigation }) {
 
       try {
         const response = await axios.post(
-          "https://stallion-holy-informally.ngrok-free.app/api/v1.0/signin",
+          url + "/api/v1.0/signin",
           {
             email,
             password,
@@ -70,7 +72,7 @@ export default function SignInScreen({ navigation }) {
             token: response.data.access_token,
             imageUri: response.data.image_uri
           }));
-          router.push('../../(tabs)/home/');
+          router.push('/(tabs)/home/');
       Toast.show({
         type: "success",
         text1: "Success",
@@ -120,7 +122,7 @@ export default function SignInScreen({ navigation }) {
           </View>
 
           {/* Input Fields */}
-          <View style={tw`space-y-4`}>
+          <View style={tw``}>
             {/* Email Input */}
             <View style={tw`bg-white rounded-2xl px-4 py-3 shadow-md border border-gray-100`}>
               <Text style={[tw`text-xs text-gray-500 mb-1`, { fontFamily: 'outfit' }]}>Email</Text>
@@ -194,7 +196,7 @@ export default function SignInScreen({ navigation }) {
               Don't have an account?{" "}
               <Text 
                 style={[tw`text-blue-500 font-medium`, { fontFamily: 'outfit-medium' }]}
-                onPress={() => router.push('/home')}
+                onPress={() => router.push('/auth/sign-up/')}
               >
                 Sign Up
               </Text>
@@ -211,7 +213,7 @@ export default function SignInScreen({ navigation }) {
               <View style={tw`flex-1 h-px bg-gray-200`} />
             </View>
 
-            <View style={tw`flex-row justify-center space-x-4`}>
+            <View style={tw`flex-row justify-center`}>
               {['google', 'apple', 'facebook'].map((provider) => (
                 <TouchableOpacity 
                   key={provider}

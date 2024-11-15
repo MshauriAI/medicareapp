@@ -118,7 +118,7 @@ export default function Home() {
             <Text style={[tw`text-lg text-gray-600`, { fontFamily: 'outfit' }]}>Welcome back,</Text>
             <Text style={[tw`text-2xl text-gray-900`, { fontFamily: 'outfit-bold' }]}>{user.firstName}</Text>
           </View>
-          <View style={tw`flex-row items-center space-x-4`}>
+          <View style={tw`flex-row items-center`}>
             <TouchableOpacity style={tw`relative`}>
               <Ionicons name="notifications-outline" size={24} color="#1c1917" />
               <View style={tw`absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white`} />
@@ -140,16 +140,16 @@ export default function Home() {
         <View style={tw`bg-white rounded-3xl p-6 shadow-lg mb-6`}>
           <View style={tw`flex-row justify-between items-center mb-4`}>
             <Text style={[tw`text-xl text-gray-900`, { fontFamily: 'outfit-bold' }]}>
-              Upcoming Appointment
+              Upcoming Appointments ({ upcomingAppointments })
             </Text>
             <TouchableOpacity>
               <Text style={[tw`text-blue-600`, { fontFamily: 'outfit-medium' }]}
-                onPress={() => router.push('/(tabs)/booking')}
+                onPress={() => router.push('/(tabs)/appointment')}
               >View all</Text>
             </TouchableOpacity>
           </View>
 
-          {upcomingAppointment ? (
+          {upcomingAppointment && upcomingAppointment.length > 0 ? (
             <View style={tw`flex-row items-center`}>
               <Image 
                 source={{ uri: upcomingAppointment[0].doctor_image_url }}

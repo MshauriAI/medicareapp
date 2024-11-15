@@ -73,7 +73,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* Quick Stats */}
-        <View style={tw`flex-row justify-between mt-6 bg-white/10 rounded-2xl p-4`}>
+        <View style={tw`flex-row justify-between mt-6  rounded-2xl p-4`}>
           <View style={tw`items-center`}>
             <Text style={tw`text-white text-xl font-bold`}>{userProfile.consultations}</Text>
             <Text style={tw`text-blue-100 text-sm`}>Consultations</Text>

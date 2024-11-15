@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Modal, Lin
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link } from "expo-router";
+import { router } from 'expo-router';
 import moment from 'moment';
 
 export default function AppointmentsScreen({ navigation }) {
@@ -16,22 +17,22 @@ export default function AppointmentsScreen({ navigation }) {
 
     useEffect(() => {
         const getUserInfo = async () => {
-          try {
-            const userInfo = await AsyncStorage.getItem('userInfo');
-            if (userInfo !== null) {
-              const parsedUser = JSON.parse(userInfo);
-              setUser(parsedUser);
-              
-              if (parsedUser.token) {
-                getUpcomingAppointments(parsedUser.token);
-                getPastAppointments(parsedUser.token);
-              } else {
-                console.log("No token available");
-              }
-            }
-          } catch (error) {
-            console.error("Error retrieving user info:", error);
-          } 
+            try {
+                const userInfo = await AsyncStorage.getItem('userInfo');
+                if (userInfo !== null) {
+                const parsedUser = JSON.parse(userInfo);
+                setUser(parsedUser);
+                
+                if (parsedUser.token) {
+                    getUpcomingAppointments(parsedUser.token);
+                    getPastAppointments(parsedUser.token);
+                } else {
+                    console.log("No token available");
+                }
+                }
+            } catch (error) {
+                console.error("Error retrieving user info:", error);
+            } 
         };
     
         getUserInfo();
@@ -90,7 +91,7 @@ export default function AppointmentsScreen({ navigation }) {
             {/* Navbar */}
             <View style={styles.navbar}>
                 <View style={styles.breadcrumb}>
-                    <TouchableOpacity  onPress={() => navigation.navigate('Home')}>
+                    <TouchableOpacity onPress={() => router.push('/(tabs)/home/')}>
                         <Text style={styles.breadcrumbText}>Home</Text>
                     </TouchableOpacity>
                     <Ionicons name="chevron-forward" size={15} style={styles.breadcrumbText} />

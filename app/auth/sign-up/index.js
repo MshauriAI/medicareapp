@@ -12,23 +12,79 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import tw from "tailwind-react-native-classnames";
+import Toast from "react-native-toast-message";
+import axios from "axios";
 import { useRouter } from 'expo-router';
 
 
 export default function SignUpScreen({ navigation }) {
-    const [gender, setGender] = useState("");
     const [passwordVisible, setPasswordVisible] = useState(false);
     const router = useRouter();
+    const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    first_name: '',
+    last_name: '',
     email: '',
-    dob: '',
     gender: '',
-    phone: '',
-    password: ''
+    phone_number: '',
+    password: '',
+    role: "Patient"
   });
+
+  const url = "https://stallion-holy-informally.ngrok-free.app";
+
+  const handleSignUp = async () => {
+    setLoading(true);
+    if (!formData.email || !formData.password) {
+      Toast.show({
+        type: "error",
+        text1: "Validation Error",
+        text2: "All fields are required",
+      });
+      setLoading(false);
+      return;
+    }
+
+    const role = 'Patient';
+    console.log('signin up');
+
+    try {
+      const response = await axios.post(
+        url + "/api/v1.0/signup",
+        JSON.stringify(formData)
+        ,
+        {
+          headers: {"Content-Type": "application/json" }
+        }
+      );
+
+      if (response.status == 201) {
+        console.log("DONE")
+        router.push('/auth/sign-in/');
+    Toast.show({
+      type: "success",
+      text1: "Success",
+      text2: "Signup Successful",
+    });
+    } else {
+      setLoading(false);
+      Toast.show({
+        type: "error",
+        text1: "Sign-up Failed",
+        text2: response.data.message || "Please try again.",
+      });
+    }
+  } catch (error) {
+    console.error("Sign-up error:", error);
+    Toast.show({
+      type: "error",
+      text1: "Error",
+      text2: error.response?.data.message || "An unexpected error occurred",
+    });
+    setLoading(false);
+  }
+};
 
   return (
     <LinearGradient
@@ -54,9 +110,9 @@ export default function SignUpScreen({ navigation }) {
           </View>
 
           {/* Form */}
-          <View style={tw`space-y-4`}>
+          <View style={tw``}>
             {/* Name Row */}
-            <View style={tw`flex-row space-x-3`}>
+            <View style={tw`flex-row`}>
               <View style={tw`flex-1`}>
                 <Text style={[tw`text-xs text-gray-500 mb-1 ml-1`, { fontFamily: 'outfit' }]}>First Name</Text>
                 <View style={tw`bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100`}>
@@ -66,8 +122,8 @@ export default function SignUpScreen({ navigation }) {
                       style={[tw`flex-1 ml-3 text-gray-800`, { fontFamily: 'outfit' }]}
                       placeholder="John"
                       placeholderTextColor="#9ca3af"
-                      value={formData.firstName}
-                      onChangeText={(text) => setFormData({...formData, firstName: text})}
+                      value={formData.first_name}
+                      onChangeText={(text) => setFormData({...formData, first_name: text})}
                     />
                   </View>
                 </View>
@@ -82,8 +138,8 @@ export default function SignUpScreen({ navigation }) {
                       style={[tw`flex-1 ml-3 text-gray-800`, { fontFamily: 'outfit' }]}
                       placeholder="Doe"
                       placeholderTextColor="#9ca3af"
-                      value={formData.lastName}
-                      onChangeText={(text) => setFormData({...formData, lastName: text})}
+                      value={formData.last_name}
+                      onChangeText={(text) => setFormData({...formData, last_name: text})}
                     />
                   </View>
                 </View>
@@ -118,8 +174,8 @@ export default function SignUpScreen({ navigation }) {
                     style={[tw`flex-1 ml-3 text-gray-800`, { fontFamily: 'outfit' }]}
                     placeholder="MM/DD/YYYY"
                     placeholderTextColor="#9ca3af"
-                    value={formData.dob}
-                    onChangeText={(text) => setFormData({...formData, dob: text})}
+                    // value={formData.date_of_birth}
+                    // onChangeText={(text) => setFormData({...formData, date_of_birth: text})}
                   />
                 </View>
               </View>
@@ -135,8 +191,8 @@ export default function SignUpScreen({ navigation }) {
                   style={[tw`text-gray-800`, { fontFamily: 'outfit' }]}
                 >
                   <Picker.Item label="Select your gender" value="" />
-                  <Picker.Item label="Male" value="male" />
-                  <Picker.Item label="Female" value="female" />
+                  <Picker.Item label="Male" value="Male" />
+                  <Picker.Item label="Female" value="Female" />
                   <Picker.Item label="Other" value="other" />
                 </Picker>
               </View>
@@ -153,8 +209,8 @@ export default function SignUpScreen({ navigation }) {
                     placeholder="+1 (555) 000-0000"
                     placeholderTextColor="#9ca3af"
                     keyboardType="phone-pad"
-                    value={formData.phone}
-                    onChangeText={(text) => setFormData({...formData, phone: text})}
+                    value={formData.phone_number}
+                    onChangeText={(text) => setFormData({...formData, phone_number: text})}
                   />
                 </View>
               </View>
@@ -184,7 +240,7 @@ export default function SignUpScreen({ navigation }) {
             {/* Sign Up Button */}
             <TouchableOpacity
               style={tw`bg-blue-500 rounded-2xl py-4 shadow-lg mt-6`}
-              onPress={() => router.push('/(tabs)/home')}
+              onPress={handleSignUp}
             >
               <Text style={[tw`text-white text-center text-lg`, { fontFamily: 'outfit-medium' }]}>
                 Create Account
@@ -201,7 +257,7 @@ export default function SignUpScreen({ navigation }) {
                 <View style={tw`flex-1 h-px bg-gray-200`} />
               </View>
 
-              <View style={tw`flex-row justify-center space-x-4`}>
+              <View style={tw`flex-row justify-center `}>
                 {['google', 'apple', 'facebook'].map((provider) => (
                   <TouchableOpacity 
                     key={provider}

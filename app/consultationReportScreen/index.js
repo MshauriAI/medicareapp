@@ -39,7 +39,7 @@ export default function ConsultationReport({ navigation }) {
                         <Ionicons name="chevron-back" size={24} color="white" />
                         <Text style={[tw`text-white text-lg ml-1`, { fontFamily: 'outfit-medium' }]}>Report</Text>
                     </TouchableOpacity>
-                    <View style={tw`flex-row items-center space-x-4`}>
+                    <View style={tw`flex-row items-center `}>
                         <TouchableOpacity style={tw`relative`}>
                             <Ionicons name="notifications-outline" size={24} color="white" />
                             <View style={tw`absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white`} />
@@ -61,7 +61,7 @@ export default function ConsultationReport({ navigation }) {
                                 Patient Information
                             </Text>
                         </LinearGradient>
-                        <View style={tw`space-y-2`}>
+                        <View style={tw`-2`}>
                             <Text style={[tw`text-gray-900`, { fontFamily: 'outfit-bold' }]}>
                                 {reportDetails.patientName}
                             </Text>
@@ -82,7 +82,7 @@ export default function ConsultationReport({ navigation }) {
                                 Doctor Information
                             </Text>
                         </LinearGradient>
-                        <View style={tw`space-y-2`}>
+                        <View style={tw`-2`}>
                             <Text style={[tw`text-gray-900`, { fontFamily: 'outfit-bold' }]}>
                                 {reportDetails.doctor}
                             </Text>

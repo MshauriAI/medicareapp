@@ -34,7 +34,7 @@ export default function AboutScreen({ navigation }) {
         {/* Features */}
         <View style={tw`bg-white rounded-xl p-6 shadow-sm mb-6`}>
           <Text style={[tw`text-xl text-gray-900 mb-4`, { fontFamily: 'outfit-bold' }]}>Features</Text>
-          <View style={tw`space-y-3`}>
+          <View style={tw`-3`}>
             <View style={tw`flex-row items-center`}>
               <Ionicons name="videocam" size={24} color="#2563EB" />
               <Text style={[tw`ml-3 text-gray-700`, { fontFamily: 'outfit' }]}>Video Consultations</Text>

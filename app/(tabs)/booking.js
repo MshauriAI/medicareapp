@@ -15,6 +15,7 @@ import { BlurView } from 'expo-blur';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from 'expo-router';
 
 export default function DoctorAppointmentScreen({ navigation }) {
     const [appointmentDate, setAppointmentDate] = useState(new Date());
@@ -101,14 +102,12 @@ export default function DoctorAppointmentScreen({ navigation }) {
                 },
             });
 
-            if (!response.ok) throw new Error('Failed to fetch doctors');
-
+            if (!response.ok) throw new Error('Failed to schedule appointment');
             const data = await response.json();
-            if (!data.doctors) throw new Error('Invalid response format: missing doctors array');
 
-            setDoctors(data.doctors);
             setModalVisible(false);
             setRefresh(prev => !prev);
+
         } catch (error) {
             setError(error.message);
             console.error('Error fetching doctors:', error);
@@ -140,7 +139,7 @@ export default function DoctorAppointmentScreen({ navigation }) {
         <SafeAreaView style={styles.container}>
             <View style={styles.navbar}>
                 <View style={styles.breadcrumb}>
-                    <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+                    <TouchableOpacity onPress={() => router.push('/(tabs)/home/')}>
                         <Text style={styles.breadcrumbText}>Home</Text>
                     </TouchableOpacity>
                     <Ionicons name="chevron-forward" size={15} style={styles.breadcrumbText} />
@@ -185,51 +184,64 @@ export default function DoctorAppointmentScreen({ navigation }) {
             {/* Doctor List */}
             {!loading && !error && (
                 <FlatList
-                    data={filteredDoctors}
-                    renderItem={({ item }) => (
-                        <TouchableOpacity style={styles.doctorCard} onPress={() => openBookingModal(item)}>
-                            <View style={styles.doctorHeader}>
-                                <Image source={{ uri: item.image_url || 'https://via.placeholder.com/100' }} style={styles.doctorImage} />
-                                <View style={styles.doctorDetails}>
-                                    <Text style={styles.doctorName}>{item.name}</Text>
-                                    <Text style={styles.doctorSpecialty}>{item.specialization}</Text>
-                                </View>
-                            </View>
-                            <View style={styles.ratingRow}>
-                                {[...Array(Math.floor(item.rating || 0))].map((_, index) => (
-                                    <FontAwesome key={index} name="star" size={16} color="#FFD700" />
-                                ))}
-                                {item.rating % 1 >= 0.5 && (
-                                    <FontAwesome name="star-half-full" size={16} color="#FFD700" />
-                                )}
-                                <Text style={styles.ratingText}>
-                                    {item.rating?.toFixed(1)} ({item.reviewCount || 0} reviews)
+                data={filteredDoctors}
+                renderItem={({ item }) => (
+                    <TouchableOpacity 
+                        style={styles.doctorCard} 
+                        onPress={() => openBookingModal(item)}
+                    >
+                        <View style={styles.doctorHeader}>
+                            <Image 
+                                source={{ uri: item.image_url || 'https://via.placeholder.com/100' }} 
+                                style={styles.doctorImage} 
+                            />
+                            <View style={styles.doctorDetails}>
+                                {/* Check if item.name and item.specialization exist */}
+                                <Text style={styles.doctorName}>{item.name || 'No name available'}</Text>
+                                <Text style={styles.doctorSpecialty}>
+                                    {item.specialization || 'Specialization not available'}
                                 </Text>
                             </View>
-                            <Text style={styles.doctorDescription}>
-                                {item.description || 'No description available'}
-                            </Text>
-                            <View style={styles.cardActions}>
-                                <TouchableOpacity 
-                                    style={styles.bookButton} 
-                                    onPress={() => openBookingModal(item)}
-                                >
-                                    <Text style={styles.bookButtonText}>Book Now</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity style={styles.infoButton}>
-                                    <Ionicons name="information-circle-outline" size={24} color="#1c0c4a" />
-                                </TouchableOpacity>
-                            </View>
-                        </TouchableOpacity>
-                    )}
-                    keyExtractor={(item) => item.id}
-                    contentContainerStyle={styles.listContainer}
-                    ListEmptyComponent={
-                        <View style={styles.messageContainer}>
-                            <Text>No doctors found</Text>
                         </View>
-                    }
-                />
+                        <View style={styles.ratingRow}>
+                            {/* Check if item.rating exists */}
+                            {[...Array(Math.floor(item.rating || 0))].map((_, index) => (
+                                <FontAwesome key={index} name="star" size={16} color="#FFD700" />
+                            ))}
+                            {/* Handle fractional stars */}
+                            {item.rating % 1 >= 0.5 && (
+                                <FontAwesome name="star-half-full" size={16} color="#FFD700" />
+                            )}
+                            <Text style={styles.ratingText}>
+                                {item.rating ? item.rating.toFixed(1) : 'No rating'} 
+                                ({item.reviewCount || 0} reviews)
+                            </Text>
+                        </View>
+                        <Text style={styles.doctorDescription}>
+                            {item.description || 'No description available'}
+                        </Text>
+                        <View style={styles.cardActions}>
+                            <TouchableOpacity 
+                                style={styles.bookButton} 
+                                onPress={() => openBookingModal(item)}
+                            >
+                                <Text style={styles.bookButtonText}>Book Now</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.infoButton}>
+                                <Ionicons name="information-circle-outline" size={24} color="#1c0c4a" />
+                            </TouchableOpacity>
+                        </View>
+                    </TouchableOpacity>
+                )}
+                keyExtractor={(item) => item.id} 
+                contentContainerStyle={styles.listContainer}
+                ListEmptyComponent={
+                    <View style={styles.messageContainer}>
+                        <Text>No doctors found</Text>
+                    </View>
+                }
+            />
+            
             )}
 
             {/* Booking Modal */}
@@ -307,7 +319,7 @@ export default function DoctorAppointmentScreen({ navigation }) {
                                     onPress={() => {
                                         setModalVisible(false);
                                         setSelectedDoctor(null);
-                                        scheduleAppointment(user.token);
+                                        scheduleAppointment(user.token)
                                     }}
                                 >
                                     <Text style={styles.confirmButtonText}>Confirm Appointment</Text>
